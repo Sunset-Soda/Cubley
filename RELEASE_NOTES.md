@@ -7,7 +7,7 @@ The first release of Cubely: a Rubik's Cube scrambler, solver and timer in one a
 - **Solver** – colour in a flat net of your own cube and get a step-by-step solution on the guide cube. Mistakes are flagged live while you paint.
 - **Timer** – press `Space` to start and stop. Solves are saved and graphed with averages of 5 and 12, plus DNF marking.
 - **Ten themes**, each with its own colours, art, fonts and light and dark versions: Cherry Pop, Grape Grunge, Camp Glitter, Midnight Diary, Chrome Chaos, Scarlet Scribble, Crate Jungle, Lonely Shore, Noir Witch and Meadow Quest.
-- **Phones and foldable cover screens:** a fixed, no-scroll layout with swipeable pages (Guide / Scramble / History, Colour in / Solution, Timer / Graph). Unfolded screens get two columns.
+- **Phones and foldable cover screens:** a fixed, no-scroll layout with swipeable pages (Guide / Scramble / History, Colour in / Solution, Timer / Graph). The theme picker shows the full theme name and every control fits without scrolling. Unfolded screens get two columns.
 - Fills the whole window when maximised, and works fully offline (fonts are bundled).
 
 ### Downloads
