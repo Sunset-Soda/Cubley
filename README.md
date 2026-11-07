@@ -5,11 +5,14 @@
 **Scramble it. Solve it. Time it.**
 A Rubik's Cube scrambler, solver and timer with ten themes, for Windows and Linux.
 
-[**⬇ Download the latest release**](https://github.com/Sunset-Soda/Cubley/releases/latest)
+[**▶ Use it in your browser**](https://sunset-soda.github.io/Cubley/) · [**⬇ Download the app**](https://github.com/Sunset-Soda/Cubley/releases/latest)
 
 ![Cubely scrambler](docs/scrambler.png)
 
 </div>
+
+## Use it online
+No install needed: **https://sunset-soda.github.io/Cubley/**. It runs entirely in your browser, and your times and settings are saved in that browser.
 
 ## Download
 
