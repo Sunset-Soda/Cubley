@@ -3,7 +3,7 @@
 # Cubely
 
 **Scramble it. Solve it. Time it.**
-A Rubik's Cube scrambler, solver and timer with ten themes, for Windows and Linux.
+A Rubik's Cube scrambler, solver and timer with ten themes, for Windows, macOS and Linux.
 
 [**▶ Use it in your browser**](https://sunset-soda.github.io/Cubley/) · [**⬇ Download the app**](https://github.com/Sunset-Soda/Cubley/releases/latest)
 
@@ -19,6 +19,7 @@ No install needed: **https://sunset-soda.github.io/Cubley/**. It runs entirely i
 | Platform | File | How to run |
 |---|---|---|
 | Windows | `Cubely-Setup-x.y.z.exe` | Double-click to install. Windows may show a SmartScreen warning because the app isn't code-signed: click **More info → Run anyway**. |
+| macOS | `Cubely-x.y.z-mac-arm64.dmg` (Apple Silicon) or `-mac-x64.dmg` (Intel) | Open the .dmg and drag Cubely to Applications. The app isn't signed or notarised, so the first time **right-click → Open** (or allow it under System Settings → Privacy & Security). |
 | Linux | `Cubely-x.y.z.AppImage` | `chmod +x Cubely-*.AppImage` then run it. Some distros need `libfuse2`. |
 
 Grab them from the [Releases page](https://github.com/Sunset-Soda/Cubley/releases/latest). The app works fully offline and the theme fonts are bundled.
@@ -51,6 +52,7 @@ Cherry Pop · Grape Grunge · Camp Glitter · Midnight Diary · Chrome Chaos · 
 Solve times, your painted cube and your chosen theme are stored locally and survive closing the app and updating.
 
 - Windows: `%APPDATA%\Cubely`
+- macOS: `~/Library/Application Support/Cubely`
 - Linux: `~/.config/Cubely`
 
 ## Build it yourself
@@ -61,9 +63,10 @@ npm install
 npm start              # run without packaging
 npm run dist           # Linux AppImage  -> dist/
 npm run dist:win       # Windows installer -> dist/ (run on Windows)
+npm run dist:mac       # macOS .dmg -> dist/ (run on a Mac)
 ```
 
-Pushing a tag like `v1.1.0` makes GitHub Actions build both installers and attach them to a new release.
+Pushing a tag like `v1.1.0` makes GitHub Actions build all three installers and attach them to a new release.
 
 ## Notes
 - On Ubuntu 24.04 and newer, if the AppImage window doesn't open, run it with `--no-sandbox`.

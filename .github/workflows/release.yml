@@ -16,6 +16,8 @@ jobs:
             cmd: npx electron-builder --linux AppImage --publish never
           - os: windows-latest
             cmd: npx electron-builder --win nsis --publish never
+          - os: macos-latest
+            cmd: npx electron-builder --mac dmg --publish never
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -30,6 +32,7 @@ jobs:
           path: |
             dist/*.AppImage
             dist/*.exe
+            dist/*.dmg
   release:
     needs: build
     runs-on: ubuntu-latest
