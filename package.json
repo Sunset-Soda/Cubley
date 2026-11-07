@@ -1,0 +1,35 @@
+{
+  "name": "cubely",
+  "productName": "Cubely",
+  "version": "1.0.0",
+  "description": "Cube scrambler, solver and timer",
+  "author": "Cubely",
+  "main": "main.js",
+  "scripts": {
+    "fonts": "node scripts/get-fonts.js",
+    "start": "npm run fonts && electron .",
+    "dist": "npm run fonts && electron-builder --linux AppImage"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "app.cubely.desktop",
+    "productName": "Cubely",
+    "files": [
+      "main.js",
+      "index.html",
+      "build/icon.png",
+      "fonts/**/*"
+    ],
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Game",
+      "icon": "build/icon.png",
+      "artifactName": "Cubely-${version}.AppImage"
+    }
+  }
+}
