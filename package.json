@@ -10,7 +10,7 @@
     "start": "npm run fonts && electron .",
     "dist": "npm run fonts && electron-builder --linux AppImage",
     "dist:win": "npm run fonts && electron-builder --win nsis",
-    "dist:mac": "npm run fonts && electron-builder --mac dmg"
+    "dist:mac": "npm run fonts && electron-builder --mac dmg --arm64 --x64"
   },
   "devDependencies": {
     "electron": "^33.0.0",
