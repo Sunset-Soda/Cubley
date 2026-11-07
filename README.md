@@ -3,7 +3,7 @@
 # Cubely
 
 **Scramble it. Solve it. Time it.**
-A Rubik's Cube scrambler, solver and timer with ten themes, for Windows, macOS and Linux.
+A Rubik's Cube scrambler, solver and timer with ten themes, for Windows, macOS, Linux and Android.
 
 [**▶ Use it in your browser**](https://sunset-soda.github.io/Cubley/) · [**⬇ Download the app**](https://github.com/Sunset-Soda/Cubley/releases/latest)
 
@@ -20,6 +20,7 @@ No install needed: **https://sunset-soda.github.io/Cubley/**. It runs entirely i
 |---|---|---|
 | Windows | `Cubely-Setup-x.y.z.exe` | Double-click to install. Windows may show a SmartScreen warning because the app isn't code-signed: click **More info → Run anyway**. |
 | macOS | `Cubely-x.y.z-mac-arm64.dmg` (Apple Silicon) or `-mac-x64.dmg` (Intel) | Open the .dmg and drag Cubely to Applications. The app isn't signed or notarised, so the first time **right-click → Open** (or allow it under System Settings → Privacy & Security). |
+| Android | `Cubely-x.y.z.apk` | Open the file on your phone or tablet and allow "install unknown apps" when asked. Laid out for foldables like the Galaxy Z Fold: the unfolded inner screen gets a two-column layout, and it resizes smoothly as you fold and unfold. |
 | Linux | `Cubely-x.y.z.AppImage` | `chmod +x Cubely-*.AppImage` then run it. Some distros need `libfuse2`. |
 
 Grab them from the [Releases page](https://github.com/Sunset-Soda/Cubley/releases/latest). The app works fully offline and the theme fonts are bundled.
@@ -66,7 +67,7 @@ npm run dist:win       # Windows installer -> dist/ (run on Windows)
 npm run dist:mac       # macOS .dmg -> dist/ (run on a Mac)
 ```
 
-Pushing a tag like `v1.1.0` makes GitHub Actions build all three installers and attach them to a new release.
+Pushing a tag like `v1.1.0` makes GitHub Actions build all the installers and attach them to a new release.
 
 ## Notes
 - On Ubuntu 24.04 and newer, if the AppImage window doesn't open, run it with `--no-sandbox`.

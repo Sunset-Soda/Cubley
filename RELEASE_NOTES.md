@@ -15,6 +15,7 @@ The first release of Cubely: a Rubik's Cube scrambler, solver and timer in one a
 | Windows | `Cubely-Setup-1.0.0.exe` |
 | macOS (Apple Silicon) | `Cubely-1.0.0-mac-arm64.dmg` |
 | macOS (Intel) | `Cubely-1.0.0-mac-x64.dmg` |
+| Android | `Cubely-1.0.0.apk` |
 | Linux | `Cubely-1.0.0.AppImage` |
 
 Prefer not to install anything? Use it in your browser: https://sunset-soda.github.io/Cubley/
@@ -23,6 +24,7 @@ Prefer not to install anything? Use it in your browser: https://sunset-soda.gith
 The apps aren't code-signed, so your system may warn you the first time.
 - **Windows:** SmartScreen → *More info* → *Run anyway*.
 - **macOS:** right-click the app → *Open*.
+- **Android:** open the .apk and allow installing from this source. It adapts to foldables: two columns on the unfolded inner screen, and it resizes as you fold and unfold.
 - **Linux:** `chmod +x Cubely-1.0.0.AppImage`, then run it. Some distros need `libfuse2`.
 
 Your times, painted cube and theme are saved locally and kept when you update.
