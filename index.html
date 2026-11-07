@@ -856,6 +856,7 @@ kbd { font: 500 0.7rem var(--font-mono); padding: 1px 6px; border-radius: 5px; b
 
 /* ---------- Phones and foldable cover screens: an app-like layout that fits the screen, with swipeable pages ---------- */
 .pager { display: none; }
+#helpCard { display: none; }
 #histCard, #noteBox { grid-column: 1 / -1; }
 @media (max-width: 599px) and (min-height: 480px) {
   html, body { height: 100%; }
@@ -903,7 +904,8 @@ kbd { font: 500 0.7rem var(--font-mono); padding: 1px 6px; border-radius: 5px; b
   #solverCard .pal button { padding: 4px 0 3px; font-size: 0.58rem; }
   #solverCard .pal .st { width: 20px; height: 20px; }
   #solverCard .pal .cnt { font-size: 0.56rem; }
-  .sv-left .actions .btn { font-size: 0.8rem; padding: 0.4rem 0.7rem; }
+  .sv-left .actions { flex-wrap: nowrap; gap: 5px; }
+  .sv-left .actions .btn { font-size: 0.74rem; padding: 0.4rem 0.45rem; white-space: nowrap; }
   .sv-left, .sv-body { gap: 8px; }
   /* timer page: no hint text on a touch screen, tight buttons and stats */
   #tHint { display: none; }
@@ -914,6 +916,22 @@ kbd { font: 500 0.7rem var(--font-mono); padding: 1px 6px; border-radius: 5px; b
   #tCard .tstats > div { padding: 6px 4px; min-width: 0; }
   #tCard .tstats dt { font-size: 0.54rem; letter-spacing: 0.02em; }
   #tCard .tstats dd { font-size: 0.9rem; }
+  /* guide page: controls in three tight rows */
+  .g-side { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 6px; align-items: center; }
+  .g-side > .now, .g-side > #netBtn, .g-side > .netbox, .g-side > .cap { grid-column: 1 / -1; }
+  .g-side > .ctrls { display: contents; }
+  .g-side #back { order: 1; grid-column: span 3; } .g-side #play { order: 2; grid-column: span 3; } .g-side #next { order: 3; grid-column: span 3; } .g-side #flip { order: 4; grid-column: span 3; }
+  .g-side .ctrls > label.len { order: 5; grid-column: span 5; } .g-side #restart { order: 6; grid-column: span 3; } .g-side #end { order: 7; grid-column: span 4; }
+  .g-side > #netBtn { order: 8; } .g-side > .netbox { order: 9; } .g-side > .cap { order: 10; }
+  .g-side .ctrls .btn { padding: 0.4rem 0.2rem; font-size: 0.8rem; min-width: 0; white-space: nowrap; }
+  .g-side .ctrls label.len { font-size: 0.75rem; gap: 4px; min-width: 0; }
+  .g-side .ctrls select { min-width: 0; flex: 1 1 0; font-size: 0.78rem; padding: 0.3rem 0.2rem; }
+  /* how-to lives on its own page */
+  #helpCard:not([hidden]) { display: flex; }
+  #helpCard .tips ul { padding-left: 1.1rem; }
+  #helpCard .tips summary { display: none; }
+  .sv-right { gap: 6px; }
+  .sv-right .solstatus:empty { display: none; }
   /* guide page: scale the cube by screen height so the controls never fall off the bottom */
   .guide .now-move { padding: 6px 10px; }
   .g-side .row, .g-side .actions { gap: 6px; }
@@ -1433,6 +1451,10 @@ try {
       <p class="cap" id="guideCap">The cube stays put and the glowing face is the one to turn. Flip view shows the far side. Keys: ← → step, P play, R random, Space new scramble.</p>
       </div>
       </div>
+    </div>
+    <div class="card" id="helpCard" hidden>
+      <h2 class="eyebrow">How to copy your cube</h2>
+      <div id="helpSlot"></div>
     </div>
   <section class="card" id="histCard">
     <h2 class="eyebrow">Previous scrambles</h2>
@@ -2916,7 +2938,7 @@ var SV = (function () {
   var pagerEl = document.getElementById('pager'), stageEl = document.getElementById('stage');
   var PAGES = {
     scrambler: [['Guide', 'guideCard'], ['Scramble', 'scrCard'], ['History', 'histCard']],
-    solver: [['Colour in', 'solverCard'], ['Solution', 'guideCard']],
+    solver: [['Colour in', 'solverCard'], ['Solution', 'guideCard'], ['How to', 'helpCard']],
     timer: [['Timer', 'tCard'], ['Graph', 'tChartCard']]
   };
   function pagerCards() {
@@ -2946,6 +2968,15 @@ var SV = (function () {
     cards.forEach(function (c, i) { var d = Math.abs((c.offsetLeft - stageEl.offsetLeft) - stageEl.scrollLeft); if (d < bd) { bd = d; best = i; } });
     [].forEach.call(pagerEl.children, function (b, i) { b.setAttribute('aria-current', i === best ? 'true' : 'false'); });
   }
+  var helpCardEl = document.getElementById('helpCard'), tipsEl = document.querySelector('#solverCard details.tips');
+  var phoneMQ = window.matchMedia('(max-width: 599px) and (min-height: 480px)');
+  function placeTips() {
+    if (!tipsEl) return;
+    if (phoneMQ.matches) { document.getElementById('helpSlot').appendChild(tipsEl); tipsEl.open = true; }
+    else { var anchor = document.getElementById('solOut'); anchor.parentNode.insertBefore(tipsEl, anchor); tipsEl.open = false; }
+  }
+  if (phoneMQ.addEventListener) phoneMQ.addEventListener('change', placeTips); else if (phoneMQ.addListener) phoneMQ.addListener(placeTips);
+  placeTips();
   stageEl.addEventListener('scroll', pagerMark, { passive: true });
   window.addEventListener('resize', pagerMark);
   pagerBuild();
@@ -2963,6 +2994,7 @@ var SV = (function () {
     tp.tab.setAttribute('aria-pressed', tview ? 'true' : 'false');
     sp.subTail.textContent = SUBS[tview ? 'timer' : VIEW];
     document.getElementById('wrap').setAttribute('data-view', tview ? 'timer' : VIEW);
+    helpCardEl.hidden = !(sol && !tview);
     pagerBuild();
   }
   function showTab(name, fromHash) {
