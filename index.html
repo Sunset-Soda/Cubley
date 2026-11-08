@@ -2306,6 +2306,87 @@ var CFOP = (function () {
     return { k: k, toks: simplify(toks) };
   }
 
+  /* ---- beginner layer-by-layer method (white cross, corners, middle edges, then the top layer in four steps) ---- */
+  var BM = null;
+  function buildBeginner() {
+    if (BM) return;
+    BM = { sexy: [], insR: [], insL: [], oll: macro("F R U R' U' F'", 0), sune: macro("R U R' U R U2 R'", 0), anti: macro("R U2 R' U' R U' R'", 0),
+      aperm: macro("R' F R' B2 R F' R' B2 R2", 0), ua: macro("R U' R U R U R U' R' U' R2", 0), ub: macro("R2 U R U R' U' R' U' R' U R'", 0) };
+    for (var k = 0; k < 4; k++) {
+      BM.sexy[k] = macro("R U R' U'", k);
+      BM.insR[k] = macro("U R U' R' U' F' U F", k);
+      BM.insL[k] = macro("U' L' U L U F U' F'", k);
+    }
+  }
+  var FAIL = '';
+  function toks(path) { var t = []; path.forEach(function (mc) { t = t.concat(mc.toks); }); return t; }
+  function solveBeginnerState(cub) {
+    init(); buildMacros(); buildBeginner();
+    var s = cub, stages = [], U = { isU: true, list: MC.u };
+    function push(label, t) { t = simplify(t); s = apply(s, t); stages.push({ label: label, moves: t }); }
+    var cross = solveCross(s);
+    if (!cross) return null;
+    push('cross', cross);
+    /* white corners */
+    var ct = [];
+    for (var k = 0; k < 4; k++) {
+      if (s.cp[4 + k] === 4 + k && s.co[4 + k] === 0) continue;
+      for (var g = 0; g < 4; g++) {
+        var pos = s.cp.indexOf(4 + k);
+        if (pos < 4) break;
+        var sx = BM.sexy[pos - 4]; s = mul(s, sx.c); ct = ct.concat(sx.toks);
+      }
+      var doneC = [];
+      for (var j = 0; j < k; j++) doneC.push(j);
+      var path = macroSearch(s, [U, { isU: false, list: [BM.sexy[k]] }], function (st) { return st.cp[4 + k] === 4 + k && st.co[4 + k] === 0; },
+        function (st) { return crossDone(st) && doneC.every(function (j) { return st.cp[4 + j] === 4 + j && st.co[4 + j] === 0; }); }, 9, 300000);
+      if (!path) { FAIL = 'corners'; return null; }
+      var pt = toks(path); s = apply(s, pt); ct = ct.concat(pt);
+    }
+    ct = simplify(ct); stages.push({ label: 'corners', moves: ct });
+    /* middle-layer edges */
+    var mt = [], allIns = [];
+    for (k = 0; k < 4; k++) allIns.push(BM.insR[k], BM.insL[k]);
+    for (k = 0; k < 4; k++) {
+      if (s.ep[8 + k] === 8 + k && s.eo[8 + k] === 0) continue;
+      var doneE = [];
+      for (j = 0; j < k; j++) doneE.push(j);
+      var keepE = function (st) { return crossDone(st) && [0, 1, 2, 3].every(function (j) { return st.cp[4 + j] === 4 + j && st.co[4 + j] === 0; }) && doneE.every(function (j) { return st.ep[8 + j] === 8 + j && st.eo[8 + j] === 0; }); };
+      var pe = s.ep.indexOf(8 + k);
+      if (pe >= 8) {
+        var kick = BM.insR[pe - 8]; var ns = mul(s, kick.c);
+        if (keepE(ns)) { s = ns; mt = mt.concat(kick.toks); }
+      }
+      var path2 = macroSearch(s, [U, { isU: false, list: allIns }], function (st) { return st.ep[8 + k] === 8 + k && st.eo[8 + k] === 0; }, keepE, 4, 300000);
+      if (!path2) { FAIL = 'middle'; return null; }
+      var pt2 = toks(path2); s = apply(s, pt2); mt = mt.concat(pt2);
+    }
+    mt = simplify(mt); stages.push({ label: 'middle', moves: mt });
+    var f2l = function (st) { return f2lDone(st, 4) && [0, 1, 2, 3].every(function (j) { return st.ep[8 + j] === 8 + j && st.eo[8 + j] === 0; }); };
+    var p3 = macroSearch(s, [U, { isU: false, list: [BM.oll] }], function (st) { for (var i = 0; i < 4; i++) if (st.eo[i]) return false; return true; }, f2l, 6, 300000);
+    if (!p3) { FAIL = 'topcross'; return null; } push('topcross', toks(p3));
+    var topOk = function (st) { for (var i = 0; i < 4; i++) if (st.eo[i]) return false; return true; };
+    var p4 = macroSearch(s, [U, { isU: false, list: [BM.sune, BM.anti] }], function (st) { for (var i = 0; i < 4; i++) if (st.co[i]) return false; return true; }, function (st) { return f2l(st) && topOk(st); }, 6, 300000);
+    if (!p4) { FAIL = 'cornorient'; return null; } push('cornorient', toks(p4));
+    var p5 = macroSearch(s, [U, { isU: false, list: [BM.aperm] }], function (st) { for (var i = 0; i < 4; i++) if (st.cp[i] !== i) return false; return true; }, function (st) { if (!f2l(st) || !topOk(st)) return false; for (var i = 0; i < 4; i++) if (st.co[i]) return false; return true; }, 6, 300000);
+    if (!p5) { FAIL = 'cornpos'; return null; } push('cornpos', toks(p5));
+    var p6 = macroSearch(s, [U, { isU: false, list: [BM.ua, BM.ub] }], isSolved, function (st) { if (!f2l(st)) return false; for (var i = 0; i < 4; i++) if (st.co[i] || st.eo[i]) return false; return true; }, 8, 600000);
+    if (!p6) { FAIL = 'edgepos'; return null; } push('edgepos', toks(p6));
+    return { stages: stages.filter(function (g) { return g.moves.length; }), all: stages };
+  }
+  function solveBeginner(st) {
+    var t = st.map(function (k) { return { p: [-k.p[0], -k.p[1], k.p[2]], n: [-k.n[0], -k.n[1], k.n[2]], c: Z2[k.c] }; });
+    var cub = SV.toCubie(t);
+    if (cub.error) return { error: cub.error };
+    var bad = SV.problem(cub);
+    if (bad) return { error: bad };
+    var r = solveBeginnerState(cub);
+    if (!r) return { error: 'The beginner method could not find a route for this cube.' };
+    var moves = [];
+    r.stages.forEach(function (g) { moves = moves.concat(g.moves); });
+    return { moves: moves, stages: r.all.map(function (g) { return { label: g.label, count: g.moves.length, moves: g.moves }; }) };
+  }
+
   /* st: sticker state in the usual frame (white on top). Returns { moves, stages } for the cube turned over, or { error }. */
   function solve(st) {
     var t = st.map(function (k) { return { p: [-k.p[0], -k.p[1], k.p[2]], n: [-k.n[0], -k.n[1], k.n[2]], c: Z2[k.c] }; });
@@ -2320,7 +2401,7 @@ var CFOP = (function () {
     return { moves: moves, stages: r.stages.map(function (g) { return { label: g.label, slot: g.slot, count: g.moves.length }; }) };
   }
   function flip(st) { return st.map(function (k) { return { p: [-k.p[0], -k.p[1], k.p[2]], n: [-k.n[0], -k.n[1], k.n[2]], c: k.c }; }); }
-  return { solve: solve, flip: flip, _init: function () { init(); buildMacros(); return { M: M, MC: MC, mul: mul, f2lDone: f2lDone, isSolved: isSolved, apply: apply }; } };
+  return { fail: function () { return FAIL; }, solve: solve, solveBeginner: solveBeginner, flip: flip, _init: function () { init(); buildMacros(); return { M: M, MC: MC, mul: mul, f2lDone: f2lDone, isSolved: isSolved, apply: apply }; } };
 })();
 /*ENDCFOP*/
 
