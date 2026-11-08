@@ -1552,6 +1552,11 @@ try {
         <h2 class="eyebrow">Learn F2L</h2>
         <span class="len" id="lrnProg" aria-live="polite"></span>
       </div>
+      <div class="method" id="lrnCube" role="radiogroup" aria-label="Which cube to show in the guide">
+        <button type="button" role="radio" aria-checked="true" data-m="ex"><b>Example cube</b><small>Solved, with one pair to fix</small></button>
+        <button type="button" role="radio" aria-checked="false" data-m="mine"><b>My cube</b><small>The one you coloured in</small></button>
+      </div>
+      <p class="plain" id="lrnCubeNote" hidden></p>
       <ol class="lrn-chips" id="lrnChips" aria-label="Lessons"></ol>
       <div class="actions">
         <button class="btn ghost" id="lrnPrev" type="button">Previous</button>
@@ -3472,7 +3477,11 @@ var CFOP = (function () {
     moves: document.getElementById('lrnMoves'), plain: document.getElementById('lrnPlain'),
     prev: document.getElementById('lrnPrev'), next: document.getElementById('lrnNext')
   };
-  var LRN = { i: 0, done: {} };
+  var LRN = { i: 0, done: {}, mode: 'ex' };
+  var CUBE_KEY = 'cubely-learn-cube';
+  try { if (localStorage.getItem(CUBE_KEY) === 'mine') LRN.mode = 'mine'; } catch (e) {}
+  function paintReady() { var d = diagnose(); return !d.issues.length && !d.empty; }
+  function mineOn() { return LRN.mode === 'mine' && paintReady(); }
   try {
     var ld = JSON.parse(localStorage.getItem(DONE_KEY));
     if (Array.isArray(ld)) ld.forEach(function (id) { if (typeof id === 'string') LRN.done[id] = true; });
@@ -3482,6 +3491,7 @@ var CFOP = (function () {
   var PAIR_DONE = 'The pair is home in the slot: white on the bottom, green in front, orange on the right. Nicely done.';
   var JOIN_WHY = ['Slides the pair left, clear of the slot.', 'Lifts whatever is in the slot up into the top layer.', 'Brings the pair back above the slot while the old pieces slide behind.', 'Closes the slot with the pair dropping into it.'];
   var PAIR_WHY = ['Carries the joined pair round to the front-right, above the slot.', 'Drops the pair down into the slot.'];
+  var lrnCubeEl = document.getElementById('lrnCube'), lrnNoteEl = document.getElementById('lrnCubeNote');
   var LESSONS = [
     { id: 'intro', title: 'Meet F2L',
       see: 'F2L means First Two Layers. Once the white cross is done, you finish the bottom layer and the middle layer together, as four pairs. A pair is a white corner plus the edge that matches it.',
@@ -3536,6 +3546,7 @@ var CFOP = (function () {
   function lessonMoves() { var l = lesson(); return l.alg ? l.alg.split(' ') : []; }
   var Z2 = { U: 'D', D: 'U', L: 'R', R: 'L', F: 'F', B: 'B' };
   function lessonStart() {
+    if (mineOn()) return CFOP.flip(paintState());
     var st = solved();
     st.forEach(function (k) { k.c = Z2[faceOf(k.n)]; });
     var l = lesson();
@@ -3576,19 +3587,24 @@ var CFOP = (function () {
       el.count.textContent = 'Move ' + (G.step + 1) + ' of ' + N;
       el.nowMove.textContent = m;
       el.nowMove.classList.remove('done');
-      el.nowText.textContent = d.text + (l.why && l.why[G.step] ? ' ' + l.why[G.step] : '');
-      el.nowHint.textContent = d.hint + (faceHidden(m) ? ' This face is on the far side, so tap Flip view to see it.' : '') + (l.plain ? '' : ' ' + pieceLine());
+      if (mineOn()) {
+        el.nowText.textContent = (G.step === 0 ? 'This is your cube, with white on the bottom, so turn yours over first. ' : '') + d.text;
+        el.nowHint.textContent = d.hint + (faceHidden(m) ? ' This face is on the far side, so tap Flip view to see it.' : '');
+      } else {
+        el.nowText.textContent = d.text + (l.why && l.why[G.step] ? ' ' + l.why[G.step] : '');
+        el.nowHint.textContent = d.hint + (faceHidden(m) ? ' This face is on the far side, so tap Flip view to see it.' : '') + (l.plain ? '' : ' ' + pieceLine());
+      }
     } else if (N === 0) {
       el.count.textContent = '';
       el.nowMove.textContent = '–';
       el.nowMove.classList.remove('done');
-      el.nowText.textContent = l.intro;
+      el.nowText.textContent = mineOn() ? 'This is your cube, shown with white on the bottom. Pick a lesson to see its moves on it.' : l.intro;
       el.nowHint.textContent = '';
     } else {
       el.count.textContent = 'All ' + N + ' moves done';
       el.nowMove.textContent = 'Done';
       el.nowMove.classList.add('done');
-      el.nowText.textContent = l.done || PAIR_DONE;
+      el.nowText.textContent = mineOn() ? 'That is the whole sequence. Try the same turns on your own cube when you spot this case.' : (l.done || PAIR_DONE);
       el.nowHint.textContent = 'Press Restart to watch it again, or go back to the lessons for the next one.';
       if (!LRN.done[l.id]) { LRN.done[l.id] = true; saveDone(); renderChips(); }
     }
@@ -3616,11 +3632,15 @@ var CFOP = (function () {
     renderChips();
     lrn.title.textContent = (LRN.i + 1) + '. ' + l.title;
     lrn.see.innerHTML = '';
-    var sb = document.createElement('b'); sb.textContent = l.alg ? 'What you will see: ' : '';
+    var sb = document.createElement('b'); sb.textContent = l.alg ? (LRN.mode === 'mine' ? 'Use it when: ' : 'What you will see: ') : '';
     lrn.see.appendChild(sb); lrn.see.appendChild(document.createTextNode(l.see));
     lrn.idea.innerHTML = '';
     var ib = document.createElement('b'); ib.textContent = l.alg ? 'The idea: ' : '';
     lrn.idea.appendChild(ib); lrn.idea.appendChild(document.createTextNode(l.idea));
+    var ready = paintReady();
+    Array.prototype.forEach.call(lrnCubeEl.querySelectorAll('button'), function (b) { b.setAttribute('aria-checked', b.getAttribute('data-m') === (LRN.mode === 'mine' && ready ? 'mine' : 'ex') ? 'true' : 'false'); });
+    lrnNoteEl.hidden = !(LRN.mode === 'mine' && !ready);
+    lrnNoteEl.textContent = 'Colour in every square of your cube on the Solver first. Until then the example cube is shown.';
     var has = state.moves.length > 0;
     lrn.moves.hidden = !has; lrn.plain.hidden = !has;
     lrn.prev.disabled = LRN.i === 0;
@@ -3645,6 +3665,13 @@ var CFOP = (function () {
   lrn.moves.addEventListener('click', function (e) {
     var b = e.target.closest('button[data-i]');
     if (b) jumpTo(parseInt(b.getAttribute('data-i'), 10));
+  });
+  lrnCubeEl.addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-m]');
+    if (!b) return;
+    LRN.mode = b.getAttribute('data-m');
+    try { localStorage.setItem(CUBE_KEY, LRN.mode); } catch (x) {}
+    selectLesson(LRN.i, false);
   });
   lrn.prev.addEventListener('click', function () { selectLesson(LRN.i - 1, false); });
   lrn.next.addEventListener('click', function () { selectLesson(LRN.i + 1, true); });
