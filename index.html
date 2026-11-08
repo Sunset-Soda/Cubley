@@ -767,6 +767,34 @@ kbd { font: 500 0.7rem var(--font-mono); padding: 1px 6px; border-radius: 5px; b
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"])[data-skin="meadow"], :root:not([data-theme="light"])[data-skin="shore"] { --hl: var(--accent); } }
 :root[data-theme="dark"][data-skin="meadow"], :root[data-theme="dark"][data-skin="shore"] { --hl: var(--accent); }
 
+/* ---------- Learn F2L ---------- */
+.lrn-chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.lrn-chips button { min-width: 38px; height: 38px; padding: 0 8px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--ink); font: 700 0.85rem var(--font-ui); cursor: pointer; }
+.lrn-chips button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.lrn-chips button.done { color: var(--accent); border-color: var(--accent); }
+.lrn-chips button[aria-current="true"] { background: var(--accent-soft); box-shadow: 0 0 0 2px var(--accent); }
+.lrn-panel { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.lrn-title { margin: 0; font: 700 1.2rem/1.25 var(--font-ui); color: var(--ink); }
+.lrn-panel p { margin: 0; font-size: 0.92rem; line-height: 1.5; color: var(--ink-2); }
+.lrn-panel p b { color: var(--ink); }
+.lrn-panel .plain { font-size: 0.82rem; }
+@media (max-height: 720px), (max-width: 1239px) {
+  .lrn-chips { gap: 5px; }
+  .lrn-chips button { min-width: 32px; height: 32px; padding: 0 6px; font-size: 0.8rem; }
+  .lrn-panel { gap: 7px; }
+  .lrn-title { font-size: 1.05rem; }
+  .lrn-panel p { font-size: 0.85rem; line-height: 1.4; }
+  .lrn-panel .plain { display: none; }
+  .learnnudge { flex-wrap: nowrap; padding: 3px 6px 3px 12px; font-size: 0.82rem; }
+  .learnnudge .more { display: none; }
+  .learnnudge .btn { white-space: nowrap; min-height: 0; height: 30px; padding: 0 0.8rem; font-size: 0.8rem; }
+  #learnCard .actions { gap: 8px; }
+  #learnCard .actions .btn { padding: 0.45rem 0.9rem; font-size: 0.85rem; }
+}
+.learnnudge { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; padding: 10px 12px; border-radius: var(--r-tile); background: var(--accent-soft); border: 1px solid var(--line); font-size: 0.88rem; line-height: 1.35; color: var(--ink); }
+.learnnudge span { flex: 1 1 170px; }
+.learnnudge .btn { padding: 0.45rem 0.9rem; font-size: 0.85rem; }
+
 /* ---------- Layout: inner arrangements that adapt to each card's own width ---------- */
 .guide, #solverCard { container-type: inline-size; }
 .g-body, .g-view, .g-side, .sv-body, .sv-left, .sv-right { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
@@ -791,9 +819,10 @@ kbd { font: 500 0.7rem var(--font-mono); padding: 1px 6px; border-radius: 5px; b
   .wrap > header h1 { font-size: calc(var(--h1-size) * 0.78); }
   .wrap > header .deco { width: clamp(40px, 3.6vw, 56px); }
   #scrCard { grid-area: scr; } #guideCard { grid-area: guide; } #histCard { grid-area: hist; } #noteBox { grid-area: note; align-self: start; margin: 0; }
-  #solverCard { grid-area: solver; } #tCard { grid-area: tcard; } #tChartCard { grid-area: tchart; }
+  #solverCard { grid-area: solver; } #learnCard { grid-area: learn; } #tCard { grid-area: tcard; } #tChartCard { grid-area: tchart; }
   .wrap[data-view="scrambler"] { grid-template-columns: minmax(0, 4fr) minmax(0, 5fr) minmax(0, 3fr); grid-template-rows: auto auto minmax(0, 1fr); grid-template-areas: "head head head" "scr guide hist" "note guide hist"; }
   .wrap[data-view="solver"] { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); grid-template-areas: "head head" "solver guide"; }
+  .wrap[data-view="learn"] { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); grid-template-areas: "head head" "learn guide"; }
   .wrap[data-view="timer"] { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); grid-template-areas: "head head" "tcard tchart"; }
   .card { min-height: 0; overflow: auto; }
   .guide .g-body { margin-block: auto; }
@@ -868,6 +897,7 @@ kbd { font: 500 0.7rem var(--font-mono); padding: 1px 6px; border-radius: 5px; b
   .card { padding: 12px 14px; gap: 10px; }
   .wrap[data-view="scrambler"] { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr) auto; grid-template-areas: "head head" "scr guide" "hist guide" "note guide"; }
   .wrap[data-view="solver"] { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "head head" "solver guide"; }
+  .wrap[data-view="learn"] { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "head head" "learn guide"; }
   .wrap[data-view="timer"] { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "head head" "tcard tchart"; }
   /* a narrow card stacks its insides instead of squeezing them */
   .guide .scene { --s: clamp(24px, min(5.2vh, 7.4cqw), 70px); }
@@ -1381,6 +1411,7 @@ try {
     <div class="tabs" role="group" aria-label="Choose a tool">
       <button type="button" class="tab" id="tabScr" data-view="scrambler" aria-pressed="true">Scrambler</button>
       <button type="button" class="tab" id="tabSol" data-view="solver" aria-pressed="false">Solver</button>
+      <button type="button" class="tab" id="tabLrn" data-view="learn" aria-pressed="false">Learn</button>
       <button type="button" class="tab" id="tabTim" data-view="timer" aria-pressed="false">Timer</button>
     </div>
   </header>
@@ -1422,6 +1453,10 @@ try {
     <div class="card" id="solverCard" hidden>
       <div class="row">
         <h2 class="eyebrow">Colour in your cube</h2>
+      </div>
+      <div class="learnnudge" id="learnNudge">
+        <span><strong>New to F2L?</strong><span class="more"> Learn to solve the first two layers yourself, one easy step at a time.</span></span>
+        <button class="btn primary" id="nudgeBtn" type="button">Start learning</button>
       </div>
       <div class="sv-body">
         <div class="sv-left">
@@ -1486,6 +1521,25 @@ try {
         <button class="btn ghost icon-only" id="rand" type="button" aria-label="Random scramble" title="Random scramble"><svg class="rand-icon" id="randIcon" viewBox="0 0 64 40" aria-hidden="true"></svg></button>
         <button class="btn ghost" id="copy" type="button">Copy</button>
         <span class="status" id="status" role="status" aria-live="polite"></span>
+      </div>
+    </div>
+
+    <div class="card" id="learnCard" hidden>
+      <div class="row">
+        <h2 class="eyebrow">Learn F2L</h2>
+        <span class="len" id="lrnProg" aria-live="polite"></span>
+      </div>
+      <ol class="lrn-chips" id="lrnChips" aria-label="Lessons"></ol>
+      <div class="actions">
+        <button class="btn ghost" id="lrnPrev" type="button">Previous</button>
+        <button class="btn primary" id="lrnNext" type="button">Next lesson</button>
+      </div>
+      <div class="lrn-panel">
+        <h3 class="lrn-title" id="lrnTitle"></h3>
+        <p id="lrnSee"></p>
+        <p id="lrnIdea"></p>
+        <ol class="moves" id="lrnMoves" aria-label="Lesson moves" hidden></ol>
+        <p class="plain" id="lrnPlain" hidden></p>
       </div>
     </div>
 
@@ -2234,7 +2288,7 @@ var SV = (function () {
   })();
 
   function paintState() { return stateFromNet(paint); }
-  function startState() { return VIEW === 'solver' ? paintState() : solved(); }
+  function startState() { return VIEW === 'solver' ? paintState() : VIEW === 'learn' ? lessonStart() : solved(); }
   function recolour() {
     cstate.forEach(function (k, i) { stickEls[i].setAttribute('data-c', k.c); });
   }
@@ -2293,7 +2347,7 @@ var SV = (function () {
     });
     var N = state.moves.length;
     el.netCap.textContent = N === 0 ? 'This is the cube you painted.' : (G.step >= N ? 'After all ' + N + ' moves. Your cube should match this.' : 'After move ' + G.step + ' of ' + N + '.') +
-      ' Hold white on top and green in front. The top square sits above front, with left, front, right and back across the middle.';
+      (VIEW === 'learn' ? ' Here white is on the bottom and green is in front. The top square sits above front, with left, front, right and back across the middle.' : ' Hold white on top and green in front. The top square sits above front, with left, front, right and back across the middle.');
   }
   el.netBtn.addEventListener('click', function () {
     var open = el.netbox.hidden;
@@ -2379,7 +2433,9 @@ var SV = (function () {
   function afterStep() {
     var N = state.moves.length;
     var m = state.moves[G.step];
-    if (m) {
+    if (VIEW === 'learn') {
+      lessonAfter(m, N);
+    } else if (m) {
       var d = describe(m);
       el.count.textContent = 'Move ' + (G.step + 1) + ' of ' + N;
       el.nowMove.textContent = m;
@@ -3070,20 +3126,210 @@ var SV = (function () {
     if (b) jumpTo(parseInt(b.getAttribute('data-i'), 10));
   });
 
+  /* ---------- Learn F2L ---------- */
+  var DONE_KEY = 'cubely-f2l-done';
+  var lrn = {
+    card: document.getElementById('learnCard'), tab: document.getElementById('tabLrn'),
+    chips: document.getElementById('lrnChips'), prog: document.getElementById('lrnProg'),
+    title: document.getElementById('lrnTitle'), see: document.getElementById('lrnSee'), idea: document.getElementById('lrnIdea'),
+    moves: document.getElementById('lrnMoves'), plain: document.getElementById('lrnPlain'),
+    prev: document.getElementById('lrnPrev'), next: document.getElementById('lrnNext')
+  };
+  var LRN = { i: 0, done: {} };
+  try {
+    var ld = JSON.parse(localStorage.getItem(DONE_KEY));
+    if (Array.isArray(ld)) ld.forEach(function (id) { if (typeof id === 'string') LRN.done[id] = true; });
+  } catch (e) {}
+  function saveDone() { try { localStorage.setItem(DONE_KEY, JSON.stringify(Object.keys(LRN.done))); } catch (e) {} }
+
+  var PAIR_DONE = 'The pair is home in the slot: white on the bottom, green in front, orange on the right. Nicely done.';
+  var JOIN_WHY = ['Slides the pair left, clear of the slot.', 'Lifts whatever is in the slot up into the top layer.', 'Brings the pair back above the slot while the old pieces slide behind.', 'Closes the slot with the pair dropping into it.'];
+  var PAIR_WHY = ['Carries the joined pair round to the front-right, above the slot.', 'Drops the pair down into the slot.'];
+  var LESSONS = [
+    { id: 'intro', title: 'Meet F2L',
+      see: 'F2L means First Two Layers. Once the white cross is done, you finish the bottom layer and the middle layer together, as four pairs. A pair is a white corner plus the edge that matches it.',
+      idea: 'Hold the cube with white on the bottom and green in front, exactly as the cube here is held. Each lesson fixes one pair, the white-green-orange corner and the green-orange edge, which belong in the front-right slot. Press Next to step through the moves, or Play to watch them.',
+      intro: 'This is how you hold the cube for F2L: white on the bottom, green in front. Pick a lesson to begin.' },
+    { id: 'warm', title: 'Warm-up: R U R′ U′', alg: "R U R' U'", plain: true,
+      see: 'Four easy turns that show up in almost every F2L move. Try them on a solved cube first.',
+      idea: 'Right, top, right back, top back. Do this six times in a row and the cube returns to exactly where it started.',
+      why: ['The right side swings up toward the top.', 'The top layer spins to the left.', 'The right side swings back down.', 'The top layer spins back to the right.'],
+      done: 'That is the four-move building block. Do it five more times and the cube is solved again.' },
+    { id: 'join1', title: 'Joined pair: white faces you', alg: "U R U' R'",
+      see: 'The corner and the edge are already stuck together as a pair. They sit on the top layer at the front-right, with the white sticker facing you.',
+      idea: 'Move the pair out of the way, open the slot, bring the pair back above it, then close the slot with the pair inside.',
+      why: JOIN_WHY },
+    { id: 'join2', title: 'Joined pair: white faces right', alg: "U' F' U F",
+      see: 'The pair is joined again, at the front-right on the top layer, but this time the white sticker faces right.',
+      idea: 'The same trick, mirrored. This time the front face opens the slot and the pair waits at the back.',
+      why: ['Slides the pair back, clear of the slot.', 'Lifts whatever is in the slot up into the top layer.', 'Brings the pair back above the slot.', 'Closes the slot with the pair dropping into it.'] },
+    { id: 'pair1', title: 'Pair up, edge at the back', alg: "R U R'",
+      see: 'The corner is on the top layer at the front-right with white facing right. Its edge is on top at the back, green facing up. They are not joined yet.',
+      idea: 'Use the corner itself: swing it up beside the edge to join them, carry the pair over the slot, then drop it in.',
+      why: ['Swings the corner up and back so it lands right next to its edge. The pair is joined.'].concat(PAIR_WHY) },
+    { id: 'pair2', title: 'Pair up, edge on the left', alg: "F' U' F",
+      see: 'The corner is on the top layer at the front-right with white facing you. Its edge is on top at the left, with its green sticker facing left.',
+      idea: 'The mirror of the last lesson: swing the corner left to meet its edge, carry the pair over the slot, then drop it in.',
+      why: ['Swings the corner up and left so it lands right next to its edge. The pair is joined.'].concat(PAIR_WHY) },
+    { id: 'slot1', title: 'Corner stuck in the slot: white faces front', alg: "R U' R' U R U' R'",
+      see: 'The corner is already in the slot but twisted, with the white sticker facing front instead of down. Its edge is on the top layer on the right, green facing up.',
+      idea: 'First pull the corner out and join it to its edge (three moves). After that it is exactly the first joined-pair lesson.',
+      why: ['Pulls the corner up out of the slot.', 'Spins the top so the corner steps aside.', 'Brings the edge up beside the corner. They are joined now.'].concat(JOIN_WHY) },
+    { id: 'slot2', title: 'Corner stuck in the slot: white faces right', alg: "R U R' U' R U R'",
+      see: 'The corner is in the slot but twisted, with the white sticker facing right instead of down. Its edge is on the top layer on the right, green facing up.',
+      idea: 'First pull the corner out of the slot (three moves), then it is the same as the first pair-up lesson.',
+      why: ['Pulls the corner up out of the slot.', 'Spins the top so the corner steps aside.', 'Puts the right side back. The edge comes up on the right and the corner sits at the front-left.', 'Spins the top so the corner is back at the front-right and its edge is at the back.',
+        'Swings the corner up and back so it lands right next to its edge. The pair is joined.'].concat(PAIR_WHY) },
+    { id: 'up1', title: 'White faces up: edge beside it', alg: "R U2 R' U' R U R'",
+      see: 'The corner is on the top layer at the front-right with the white sticker facing up. Its edge is on the top layer right beside it, green facing up.',
+      idea: 'Get the edge out of the way, move the corner over, bring the edge back, and the pieces are ready to pair up like the last lessons.',
+      why: ['Swings the corner up and back while the edge drops down at the back.', 'Half-turns the top so the corner moves to the front-left.', 'Brings the edge back up on the right. Corner and edge are apart on the top layer.', 'Spins the top so the corner is at the front-right and its edge is at the back.',
+        'Swings the corner up and back so it lands right next to its edge. The pair is joined.'].concat(PAIR_WHY) },
+    { id: 'up2', title: 'White faces up: edge on the left', alg: "R U' R' U2 R U R'",
+      see: 'The corner is on the top layer at the front-right with the white sticker facing up. Its edge is on the top layer at the left, green facing up.',
+      idea: 'Twist the corner out of the way, spin the top so the corner and edge line up, then pair up and insert like before.',
+      why: ['Swings the corner up and back, twisting it so the white sticker faces back.', 'Spins the top so the edge moves toward the front.', 'Puts the right side back. The corner is now out of the way and twisted.', 'Half-turns the top so the corner is at the front-right and its edge is at the back.',
+        'Swings the corner up and back so it lands right next to its edge. The pair is joined.'].concat(PAIR_WHY) },
+    { id: 'outro', title: 'Putting it together',
+      see: 'You now know the building blocks. Solving the first two layers is just a loop.',
+      idea: 'Pick a slot and turn the whole cube so that slot is at the front-right. Find its corner and its edge, bring them next to each other on top, then insert them with a lesson above. Repeat for all four slots. Full F2L has 41 cases, but nearly all are these ideas in a different pose. You can colour in your own cube in the Solver to practise.',
+      intro: 'Turn the whole cube to bring each unsolved slot to the front-right, then use the lessons. You have got this.' }
+  ];
+  function lesson() { return LESSONS[LRN.i]; }
+  function lessonMoves() { var l = lesson(); return l.alg ? l.alg.split(' ') : []; }
+  var Z2 = { U: 'D', D: 'U', L: 'R', R: 'L', F: 'F', B: 'B' };
+  function lessonStart() {
+    var st = solved();
+    st.forEach(function (k) { k.c = Z2[faceOf(k.n)]; });
+    var l = lesson();
+    if (l.alg && !l.plain) {
+      l.alg.split(' ').reverse().forEach(function (m) { applyMove(st, invertMove(m)); });
+    }
+    return st;
+  }
+  function findPiece(cols) {
+    var by = {};
+    cstate.forEach(function (k) { var key = k.p.join(','); (by[key] = by[key] || []).push(k); });
+    for (var key in by) {
+      var g = by[key];
+      if (g.length === cols.length && cols.every(function (c) { return g.some(function (k) { return k.c === c; }); })) return g;
+    }
+    return null;
+  }
+  function posName(p) {
+    if (p[0] === 1 && p[1] === -1 && p[2] === 1) return 'the slot';
+    if (p[0] === 1 && p[1] === 0 && p[2] === 1) return 'the slot';
+    var parts = [];
+    if (p[1]) parts.push(p[1] > 0 ? 'top' : 'bottom');
+    if (p[2]) parts.push(p[2] > 0 ? 'front' : 'back');
+    if (p[0]) parts.push(p[0] > 0 ? 'right' : 'left');
+    return parts.join('-');
+  }
+  function pieceLine() {
+    var c = findPiece(['U', 'F', 'L']), e = findPiece(['F', 'L']);
+    if (!c || !e) return '';
+    var w = c.filter(function (k) { return k.c === 'U'; })[0], g = e.filter(function (k) { return k.c === 'F'; })[0];
+    return 'Right now: the corner is ' + (posName(c[0].p) === 'the slot' ? 'in the slot' : 'at the ' + posName(c[0].p)) + ' with white facing ' + FACE_NAME[faceOf(w.n)] +
+      ', and the edge is ' + (posName(e[0].p) === 'the slot' ? 'in the slot' : 'at the ' + posName(e[0].p)) + ' with green facing ' + FACE_NAME[faceOf(g.n)] + '.';
+  }
+  function lessonAfter(m, N) {
+    var l = lesson();
+    if (m) {
+      var d = describe(m);
+      el.count.textContent = 'Move ' + (G.step + 1) + ' of ' + N;
+      el.nowMove.textContent = m;
+      el.nowMove.classList.remove('done');
+      el.nowText.textContent = d.text + (l.why && l.why[G.step] ? ' ' + l.why[G.step] : '');
+      el.nowHint.textContent = d.hint + (faceHidden(m) ? ' This face is on the far side, so tap Flip view to see it.' : '') + (l.plain ? '' : ' ' + pieceLine());
+    } else if (N === 0) {
+      el.count.textContent = '';
+      el.nowMove.textContent = '–';
+      el.nowMove.classList.remove('done');
+      el.nowText.textContent = l.intro;
+      el.nowHint.textContent = '';
+    } else {
+      el.count.textContent = 'All ' + N + ' moves done';
+      el.nowMove.textContent = 'Done';
+      el.nowMove.classList.add('done');
+      el.nowText.textContent = l.done || PAIR_DONE;
+      el.nowHint.textContent = 'Press Restart to watch it again, or go back to the lessons for the next one.';
+      if (!LRN.done[l.id]) { LRN.done[l.id] = true; saveDone(); renderChips(); }
+    }
+  }
+  function renderChips() {
+    lrn.chips.textContent = '';
+    var n = 0;
+    LESSONS.forEach(function (l, i) {
+      if (LRN.done[l.id]) n++;
+      var li = document.createElement('li');
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('data-i', i);
+      b.className = LRN.done[l.id] ? 'done' : '';
+      b.textContent = (LRN.done[l.id] ? '✓ ' : '') + (i + 1);
+      b.setAttribute('aria-label', 'Lesson ' + (i + 1) + ': ' + l.title + (LRN.done[l.id] ? ', completed' : ''));
+      if (i === LRN.i) b.setAttribute('aria-current', 'true');
+      li.appendChild(b);
+      lrn.chips.appendChild(li);
+    });
+    lrn.prog.textContent = n + ' of ' + LESSONS.length + ' done';
+  }
+  function renderLearn() {
+    var l = lesson();
+    renderChips();
+    lrn.title.textContent = (LRN.i + 1) + '. ' + l.title;
+    lrn.see.innerHTML = '';
+    var sb = document.createElement('b'); sb.textContent = l.alg ? 'What you will see: ' : '';
+    lrn.see.appendChild(sb); lrn.see.appendChild(document.createTextNode(l.see));
+    lrn.idea.innerHTML = '';
+    var ib = document.createElement('b'); ib.textContent = l.alg ? 'The idea: ' : '';
+    lrn.idea.appendChild(ib); lrn.idea.appendChild(document.createTextNode(l.idea));
+    var has = state.moves.length > 0;
+    lrn.moves.hidden = !has; lrn.plain.hidden = !has;
+    lrn.prev.disabled = LRN.i === 0;
+    lrn.next.disabled = LRN.i === LESSONS.length - 1;
+    lrn.next.textContent = LRN.i === 0 ? 'Start lesson 2' : 'Next lesson';
+  }
+  function selectLesson(i, show) {
+    if (i < 0 || i >= LESSONS.length) return;
+    LRN.i = i;
+    pause();
+    state.moves = lessonMoves();
+    renderLearn();
+    renderMoves();
+    jumpTo(0);
+    if (show && phoneMQ.matches) pagerGo(1);
+    lrn.card.scrollTop = 0;
+  }
+  lrn.chips.addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-i]');
+    if (b) selectLesson(parseInt(b.getAttribute('data-i'), 10), true);
+  });
+  lrn.moves.addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-i]');
+    if (b) jumpTo(parseInt(b.getAttribute('data-i'), 10));
+  });
+  lrn.prev.addEventListener('click', function () { selectLesson(LRN.i - 1, false); });
+  lrn.next.addEventListener('click', function () { selectLesson(LRN.i + 1, true); });
+
   function setView(v, fromHash) {
-    if (v !== 'solver') v = 'scrambler';
+    if (v !== 'solver' && v !== 'learn') v = 'scrambler';
     if (v === VIEW) return;
     pause();
     cancelAnim();
+    if (VIEW === 'scrambler') scrSaved = { moves: state.moves, mode: state.mode };
+    VIEW = v;
     if (v === 'solver') {
-      scrSaved = { moves: state.moves, mode: state.mode };
-      VIEW = 'solver';
       state.moves = SOL.moves;
       state.mode = 'solver';
       el.moves = sp.moves;
       el.plain = sp.plain;
+    } else if (v === 'learn') {
+      state.moves = lessonMoves();
+      state.mode = 'learn';
+      el.moves = lrn.moves;
+      el.plain = lrn.plain;
     } else {
-      VIEW = 'scrambler';
       state.moves = scrSaved.moves;
       state.mode = scrSaved.mode;
       el.moves = scrMoves;
@@ -3091,9 +3337,11 @@ var SV = (function () {
     }
     var sol = VIEW === 'solver';
     applyVisibility();
-    sp.gTitle.textContent = sol ? 'Solution guide' : 'Move guide';
-    sp.gCap.textContent = sol ? 'The cube stays put and the glowing face is the one to turn. Flip view shows the far side. Keys: ← → step, P play. Colour keys: W Y G B R O, E erases.' : 'The cube stays put and the glowing face is the one to turn. Flip view shows the far side. Keys: ← → step, P play, R random, Space new scramble.';
+    var KEYS = 'The cube stays put and the glowing face is the one to turn. Flip view shows the far side. Keys: ← → step, P play';
+    sp.gTitle.textContent = sol ? 'Solution guide' : v === 'learn' ? 'Lesson guide' : 'Move guide';
+    sp.gCap.textContent = sol ? KEYS + '. Colour keys: W Y G B R O, E erases.' : v === 'learn' ? KEYS + '. White is on the bottom and green in front, the way you hold the cube for F2L.' : KEYS + ', R random, Space new scramble.';
     if (sol) { renderPaint(); pickColor(curColor); sp.out.hidden = !SOL.moves.length; }
+    if (v === 'learn') renderLearn();
     renderMoves();
     jumpTo(0);
   }
@@ -3101,6 +3349,7 @@ var SV = (function () {
   var SUBS = {
     scrambler: 'Start with your cube solved, white on top and green facing you, then follow the moves one at a time.',
     solver: 'Colour in the squares to match your own cube and get the moves that solve it.',
+    learn: 'Learn the first two layers (F2L) one easy case at a time. The cube shows you exactly what to turn.',
     timer: 'Press Space to start the clock and again to stop it. Your solves build a graph over time.'
   };
   var tp = {
@@ -3113,6 +3362,7 @@ var SV = (function () {
   var PAGES = {
     scrambler: [['Guide', 'guideCard'], ['Scramble', 'scrCard'], ['History', 'histCard']],
     solver: [['Colour in', 'solverCard'], ['Solution', 'guideCard'], ['How to', 'helpCard']],
+    learn: [['Lessons', 'learnCard'], ['Cube', 'guideCard']],
     timer: [['Timer', 'tCard'], ['Graph', 'tChartCard']]
   };
   function pagerCards() {
@@ -3146,8 +3396,9 @@ var SV = (function () {
   var phoneMQ = window.matchMedia('(max-width: 599px) and (min-height: 480px), (max-height: 479px) and (min-width: 560px)');
   function placeTips() {
     if (!tipsEl) return;
-    if (phoneMQ.matches) { document.getElementById('helpSlot').appendChild(tipsEl); tipsEl.open = true; }
-    else { var anchor = document.getElementById('solOut'); anchor.parentNode.insertBefore(tipsEl, anchor); tipsEl.open = false; }
+    var nudge = document.getElementById('learnNudge');
+    if (phoneMQ.matches) { var slot = document.getElementById('helpSlot'); slot.appendChild(tipsEl); slot.insertBefore(nudge, tipsEl); tipsEl.open = true; }
+    else { var anchor = document.getElementById('solOut'); anchor.parentNode.insertBefore(tipsEl, anchor); tipsEl.open = false; var sv = document.getElementById('solverCard'); sv.insertBefore(nudge, sv.children[1]); }
   }
   if (phoneMQ.addEventListener) phoneMQ.addEventListener('change', placeTips); else if (phoneMQ.addListener) phoneMQ.addListener(placeTips);
   placeTips();
@@ -3155,15 +3406,17 @@ var SV = (function () {
   window.addEventListener('resize', pagerMark);
   pagerBuild();
   function applyVisibility() {
-    var sol = VIEW === 'solver';
+    var sol = VIEW === 'solver', lrnV = VIEW === 'learn', scrV = VIEW === 'scrambler';
     sp.card.hidden = !sol || tview;
-    sp.scr.hidden = sol || tview;
-    sp.hist.hidden = sol || tview;
-    sp.note.hidden = sol || tview;
+    lrn.card.hidden = !lrnV || tview;
+    sp.scr.hidden = !scrV || tview;
+    sp.hist.hidden = !scrV || tview;
+    sp.note.hidden = !scrV || tview;
     tp.guide.hidden = tview;
     tp.card.hidden = !tview;
     tp.chartCard.hidden = !tview;
-    sp.tabScr.setAttribute('aria-pressed', !tview && !sol ? 'true' : 'false');
+    sp.tabScr.setAttribute('aria-pressed', !tview && scrV ? 'true' : 'false');
+    lrn.tab.setAttribute('aria-pressed', !tview && lrnV ? 'true' : 'false');
     sp.tabSol.setAttribute('aria-pressed', !tview && sol ? 'true' : 'false');
     tp.tab.setAttribute('aria-pressed', tview ? 'true' : 'false');
     sp.subTail.textContent = SUBS[tview ? 'timer' : VIEW];
@@ -3180,14 +3433,16 @@ var SV = (function () {
       applyVisibility();
       if (tview) { timerRender(); measureDigits(); }
     }
-    if (!wantTimer) setView(name === 'solver' ? 'solver' : 'scrambler', true);
+    if (!wantTimer) setView(name === 'solver' ? 'solver' : name === 'learn' ? 'learn' : 'scrambler', true);
     if (!fromHash) {
-      try { history.replaceState(null, '', name === 'solver' || name === 'timer' ? '#' + name : location.pathname + location.search); } catch (e) {}
+      try { history.replaceState(null, '', name === 'solver' || name === 'timer' || name === 'learn' ? '#' + name : location.pathname + location.search); } catch (e) {}
     }
   }
   sp.tabScr.addEventListener('click', function () { showTab('scrambler'); });
   sp.tabSol.addEventListener('click', function () { showTab('solver'); });
   tp.tab.addEventListener('click', function () { showTab('timer'); });
+  lrn.tab.addEventListener('click', function () { showTab('learn'); });
+  document.getElementById('nudgeBtn').addEventListener('click', function () { showTab('learn'); });
   window.addEventListener('hashchange', function () { showTab(location.hash.slice(1), true); });
   loadPaint();
   renderPaint();
@@ -3474,6 +3729,6 @@ var SV = (function () {
   });
 
   newScramble();
-  if (location.hash === '#solver' || location.hash === '#timer') showTab(location.hash.slice(1), true);
+  if (location.hash === '#solver' || location.hash === '#timer' || location.hash === '#learn') showTab(location.hash.slice(1), true);
 })();
 </script>
