@@ -786,12 +786,27 @@ kbd { font: 500 0.7rem var(--font-mono); padding: 1px 6px; border-radius: 5px; b
   .lrn-panel p { font-size: 0.85rem; line-height: 1.4; }
   .lrn-panel .plain { display: none; }
   .learnnudge { flex-wrap: nowrap; padding: 3px 6px 3px 12px; font-size: 0.82rem; }
-  .learnnudge .more { display: none; }
+  #solverCard .learnnudge { display: none; }
+  #helpCard .learnnudge { display: flex; }
+  #solverCard #nudgeBtn2 { display: inline-flex; }
   .learnnudge .btn { white-space: nowrap; min-height: 0; height: 30px; padding: 0 0.8rem; font-size: 0.8rem; }
   #learnCard .actions { gap: 8px; }
   #learnCard .actions .btn { padding: 0.45rem 0.9rem; font-size: 0.85rem; }
 }
+.method { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.method button { border: 1px solid var(--line); background: transparent; border-radius: var(--r-tile); padding: 7px 10px; text-align: left; color: var(--ink); cursor: pointer; font: inherit; line-height: 1.2; min-width: 0; }
+.method button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.method button b { display: block; font-size: 0.88rem; }
+.method button small { display: block; font-size: 0.72rem; color: var(--ink-2); margin-top: 2px; }
+.method button[aria-checked="true"] { background: var(--accent-soft); box-shadow: 0 0 0 2px var(--accent); }
+.stg { display: flex; flex-wrap: wrap; gap: 6px; }
+.stg button { border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--ink); font: 600 0.75rem var(--font-ui); padding: 4px 10px; cursor: pointer; }
+.stg button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.stg button[aria-current="true"] { background: var(--accent-soft); box-shadow: 0 0 0 2px var(--accent); }
+#solverCard > .row .method { flex: 0 1 300px; }
+@media (max-height: 720px), (max-width: 1239px) { .method button small { display: none; } .method button { padding: 5px 9px; } #solverCard > .row { flex-wrap: nowrap; } #solverCard > .row .eyebrow { display: none; } #solverCard > .row .method { flex: 1 1 auto; } }
 .learnnudge { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; padding: 10px 12px; border-radius: var(--r-tile); background: var(--accent-soft); border: 1px solid var(--line); font-size: 0.88rem; line-height: 1.35; color: var(--ink); }
+#nudgeBtn2 { display: none; }
 .learnnudge span { flex: 1 1 170px; }
 .learnnudge .btn { padding: 0.45rem 0.9rem; font-size: 0.85rem; }
 
@@ -1453,6 +1468,7 @@ try {
     <div class="card" id="solverCard" hidden>
       <div class="row">
         <h2 class="eyebrow">Colour in your cube</h2>
+        <button class="btn ghost small" id="nudgeBtn2" type="button">Learn F2L</button>
       </div>
       <div class="learnnudge" id="learnNudge">
         <span><strong>New to F2L?</strong><span class="more"> Learn to solve the first two layers yourself, one easy step at a time.</span></span>
@@ -1463,6 +1479,10 @@ try {
       <p class="cap">Pick a colour, then tap or drag over the squares to paint them. The middle squares never change.</p>
       <div class="pal" id="pal" role="group" aria-label="Paint colour"></div>
       <div class="net paint" id="paintNet" role="group" aria-label="Cube net to colour in"></div>
+      <div class="method" id="method" role="radiogroup" aria-label="Solving method">
+        <button type="button" role="radio" aria-checked="true" data-m="std" title="The usual way: the fewest moves, but hard to learn from"><b>Standard</b><small>Fewest moves</small></button>
+        <button type="button" role="radio" aria-checked="false" data-m="f2l" title="Cross, then four pairs (F2L), then the top layer. The way speedcubers solve."><b>F2L method</b><small>Cross, pairs, top layer</small></button>
+      </div>
       <div class="actions">
         <button class="btn primary" id="solve" type="button">Solve</button>
         <button class="btn ghost" id="pClear" type="button">Clear</button>
@@ -1492,6 +1512,7 @@ try {
           <h2 class="eyebrow" id="solTitle">Solution</h2>
           <button class="btn ghost small" id="solCopy" type="button">Copy</button>
         </div>
+        <div class="stg" id="solStages" aria-label="Solution stages" hidden></div>
         <ol class="moves" id="solMoves" aria-label="Solution moves"></ol>
         <p class="plain" id="solPlain"></p>
       </div>
@@ -2049,6 +2070,252 @@ var SV = (function () {
   return { init: init, solve: solve, toCubie: toCubie, problem: problem, _t: function () { return T; }, _c: { twistOf: twistOf, twistSet: twistSet, flipOf: flipOf, flipSet: flipSet, sliceOf: sliceOf, sliceSet: sliceSet, permRank: permRank, permUnrank: permUnrank, mul: mul, identity: identity, MOVES: function () { return MOVES; } } };
 })();
 /*ENDSOLVER*/
+/*CFOP*/
+/* Layer-method solver: white cross, the four F2L pairs, then the last layer in two looks.
+   The cube is solved upside down (white cross on the bottom), so the guide turns the whole cube over first.
+   Everything works on cubie states from SV, in the "turned over" frame where the goal is the normal solved cube. */
+var CFOP = (function () {
+  var FN = ['U', 'R', 'F', 'D', 'L', 'B'];
+  var Z2 = { U: 'D', D: 'U', L: 'R', R: 'L', F: 'F', B: 'B' };
+  var M = null, ID = null, EMOVE = null, CMOVE = null;
+
+  function mul(a, b) { return SV._c.mul(a, b); }
+  function init() {
+    if (M) return;
+    M = [];
+    FN.forEach(function (f) {
+      var s = solved();
+      applyMove(s, f);
+      var m = SV.toCubie(s), m2 = mul(m, m);
+      M.push(m, m2, mul(m2, m));
+    });
+    ID = SV._c.identity();
+    EMOVE = []; CMOVE = [];
+    for (var m = 0; m < 18; m++) {
+      EMOVE[m] = []; CMOVE[m] = [];
+      for (var i = 0; i < 12; i++) { var j = M[m].ep.indexOf(i); EMOVE[m][i] = [j, M[m].eo[j]]; }
+      for (i = 0; i < 8; i++) { j = M[m].cp.indexOf(i); CMOVE[m][i] = [j, M[m].co[j]]; }
+    }
+  }
+  var MODS = { '': 0, '2': 1, "'": 2 };
+  function tok(t) { return 3 * FN.indexOf(t.charAt(0)) + MODS[t.charAt(1)]; }
+  function name(m) { return FN[(m / 3) | 0] + ['', '2', "'"][m % 3]; }
+
+  /* ---- cross: IDA* on the four cross edges with three-edge lookup tables ---- */
+  var XT = null;
+  var TRIPLES = [[4, 5, 6], [4, 5, 7], [4, 6, 7], [5, 6, 7]];
+  function triIndex(p, o, k) { return ((p[k[0]] * 2 + o[k[0]]) * 24 + (p[k[1]] * 2 + o[k[1]])) * 24 + (p[k[2]] * 2 + o[k[2]]); }
+  function buildCross() {
+    if (XT) return;
+    XT = TRIPLES.map(function (tr) {
+      var size = 24 * 24 * 24, t = new Uint8Array(size).fill(255), cur = [];
+      var p = [], o = [];
+      for (var i = 0; i < 12; i++) { p[i] = i; o[i] = 0; }
+      var start = ((tr[0] * 2) * 24 + tr[1] * 2) * 24 + tr[2] * 2;
+      t[start] = 0; cur.push(start);
+      for (var d = 0; cur.length; d++) {
+        var next = [];
+        cur.forEach(function (ix) {
+          var c = ix % 24, b = ((ix / 24) | 0) % 24, a = (ix / 576) | 0;
+          for (var m = 0; m < 18; m++) {
+            var ea = EMOVE[m][a >> 1], eb = EMOVE[m][b >> 1], ec = EMOVE[m][c >> 1];
+            var na = ea[0] * 2 + ((a & 1) ^ ea[1]), nb = eb[0] * 2 + ((b & 1) ^ eb[1]), nc = ec[0] * 2 + ((c & 1) ^ ec[1]);
+            var j = (na * 24 + nb) * 24 + nc;
+            if (t[j] === 255) { t[j] = d + 1; next.push(j); }
+          }
+        });
+        cur = next;
+      }
+      return t;
+    });
+  }
+  function solveCross(cub) {
+    buildCross();
+    var p = [], o = [];
+    for (var i = 0; i < 12; i++) { p[cub.ep[i]] = i; o[cub.ep[i]] = cub.eo[i]; }
+    var path = [], deadline = Date.now() + 8000, nodes = 0;
+    function h(p, o) {
+      var best = 0;
+      for (var t = 0; t < 4; t++) { var v = XT[t][triIndex(p, o, TRIPLES[t])]; if (v > best) best = v; }
+      return best;
+    }
+    function go(p, o, d, last) {
+      var hh = h(p, o);
+      if (hh === 0 && d === 0) return true;
+      if (hh > d) return false;
+      if ((++nodes & 4095) === 0 && Date.now() > deadline) return false;
+      for (var m = 0; m < 18; m++) {
+        var f = (m / 3) | 0;
+        if (f === last || (last >= 0 && f % 3 === last % 3 && f < last)) continue;
+        var np = p.slice(), no = o.slice();
+        for (var e = 4; e < 8; e++) { var r = EMOVE[m][p[e]]; np[e] = r[0]; no[e] = o[e] ^ r[1]; }
+        path.push(m);
+        if (go(np, no, d - 1, f)) return true;
+        path.pop();
+      }
+      return false;
+    }
+    for (var lim = 0; lim <= 9; lim++) { path = []; if (go(p, o, lim, -1)) return path.map(name); }
+    return null;
+  }
+
+  /* ---- macros ---- */
+  var PHI = [
+    { R: 'R', F: 'F', L: 'L', B: 'B', U: 'U', D: 'D' },
+    { R: 'F', F: 'L', L: 'B', B: 'R', U: 'U', D: 'D' },
+    { R: 'L', F: 'B', L: 'R', B: 'F', U: 'U', D: 'D' },
+    { R: 'B', F: 'R', L: 'F', B: 'L', U: 'U', D: 'D' }
+  ];
+  function macro(alg, k) {
+    var toks = alg.split(' ').map(function (t) { return PHI[k || 0][t.charAt(0)] + t.slice(1); });
+    var c = ID;
+    toks.forEach(function (t) { c = mul(c, M[tok(t)]); });
+    return { toks: toks, c: c };
+  }
+  var UTURNS = ['U', 'U2', "U'"];
+  var PAIR_ALGS = ["U R U' R'", "U' F' U F", "R U R'", "F' U' F", "R U2 R' U' R U R'", "R U' R' U R U' R'", "R U R' U' R U R'", "R U' R' U2 R U R'",
+    "R U' R'", "F' U F", "R U2 R'", "F' U2 F", "U R U2 R' U R U' R'", "U' F' U2 F U' F' U F", "R U R' U' R U R' U' R U R'", "F' U' F U F' U' F"];
+  var EXTRACT = ["R U R'", "R U' R'", "F' U' F", "F' U F"];
+  var OLL_ALGS = ["F R U R' U' F'", "F U R U' R' F'", "R U R' U R U2 R'", "R U2 R' U' R U' R'"];
+  var PLL_ALGS = ["R' F R' B2 R F' R' B2 R2", "R2 B2 R F R' B2 R F' R", "R U' R U R U R U' R' U' R2", "R2 U R U R' U' R' U' R' U R'",
+    "R2 U2 R U2 R2 U2 R2 U2 R U2 R2", "R U R' U' R' F R2 U' R' U' R U R' F'", "F R U' R' U' R U R' F' R U R' U' R' F R F'"];
+  var MC = null;
+  function buildMacros() {
+    if (MC) return;
+    MC = { u: UTURNS.map(function (a) { return macro(a, 0); }), pair: [], extract: [], oll: OLL_ALGS.map(function (a) { return macro(a, 0); }), pll: PLL_ALGS.map(function (a) { return macro(a, 0); }) };
+    for (var k = 0; k < 4; k++) {
+      MC.pair[k] = PAIR_ALGS.map(function (a) { return macro(a, k); });
+      MC.extract[k] = EXTRACT.map(function (a) { return macro(a, k); });
+    }
+  }
+
+  function crossDone(s) { for (var e = 4; e < 8; e++) if (s.ep[e] !== e || s.eo[e]) return false; return true; }
+  function pairDone(s, k) { return s.cp[4 + k] === 4 + k && s.co[4 + k] === 0 && s.ep[8 + k] === 8 + k && s.eo[8 + k] === 0; }
+  function f2lDone(s, n) { if (!crossDone(s)) return false; for (var k = 0; k < n; k++) if (!pairDone(s, k)) return false; return true; }
+  function topOriented(s) { for (var i = 0; i < 4; i++) if (s.co[i] || s.eo[i]) return false; return true; }
+  function isSolved(s) { for (var i = 0; i < 8; i++) if (s.cp[i] !== i || s.co[i]) return false; for (i = 0; i < 12; i++) if (s.ep[i] !== i || s.eo[i]) return false; return true; }
+
+  /* depth-limited search over macros; check(s) says whether we are done, keep(s) prunes states that broke earlier work */
+  function macroSearch(start, sets, check, keep, maxDepth, budget) {
+    var path = [], nodes = 0, over = false;
+    function go(s, d, lastU) {
+      if (d === 0) return check(s);
+      if (++nodes > budget) { over = true; return false; }
+      for (var si = 0; si < sets.length; si++) {
+        var set = sets[si], isU = set.isU;
+        if (isU && lastU) continue;
+        for (var i = 0; i < set.list.length; i++) {
+          var mc = set.list[i], ns = mul(s, mc.c);
+          if (!keep(ns)) continue;
+          path.push(mc);
+          if (go(ns, d - 1, isU)) return true;
+          path.pop();
+          if (over) return false;
+        }
+      }
+      return false;
+    }
+    for (var dd = 0; dd <= maxDepth; dd++) { path = []; if (go(start, dd, false)) return path; if (over) return null; }
+    return null;
+  }
+
+  function apply(s, toks) { toks.forEach(function (t) { s = mul(s, M[tok(t)]); }); return s; }
+
+  /* merge neighbouring turns of the same face (R R' vanishes, R R becomes R2) */
+  function simplify(toks) {
+    var out = [];
+    toks.forEach(function (t) {
+      var last = out[out.length - 1];
+      if (last && last.charAt(0) === t.charAt(0)) {
+        var va = last.length === 1 ? 1 : (last.charAt(1) === '2' ? 2 : 3);
+        var vb = t.length === 1 ? 1 : (t.charAt(1) === '2' ? 2 : 3);
+        var v = (va + vb) % 4;
+        out.pop();
+        if (v) out.push(t.charAt(0) + ['', '', '2', "'"][v]);
+      } else out.push(t);
+    });
+    return out;
+  }
+
+  var PAIR_NAMES = ['front-right', 'front-left', 'back-left', 'back-right'];
+  function solveState(cub) {
+    init(); buildMacros();
+    var stages = [], s = cub, all = [];
+    /* cross */
+    var cross = solveCross(s);
+    if (!cross) return null;
+    cross = simplify(cross);
+    s = apply(s, cross);
+    stages.push({ label: 'cross', moves: cross });
+    /* pairs: pick the easiest unsolved slot each time (the first one the search solves quickest) */
+    var remaining = [0, 1, 2, 3], done = [];
+    var uSet = { isU: true, list: MC.u };
+    while (remaining.length) {
+      var bestPlan = null;
+      remaining.forEach(function (k) {
+        var plan = planPair(s, k, done);
+        if (plan && (!bestPlan || plan.toks.length < bestPlan.toks.length)) bestPlan = plan;
+      });
+      if (!bestPlan) return null;
+      s = apply(s, bestPlan.toks);
+      stages.push({ label: 'pair', slot: bestPlan.k, moves: bestPlan.toks });
+      remaining.splice(remaining.indexOf(bestPlan.k), 1);
+      done.push(bestPlan.k);
+    }
+    /* last layer */
+    var keepLL = function (st) { return f2lDone(st, 4); };
+    var oll = macroSearch(s, [uSet, { isU: false, list: MC.oll }], topOriented, keepLL, 6, 400000);
+    if (!oll) return null;
+    var ot = []; oll.forEach(function (mc) { ot = ot.concat(mc.toks); });
+    ot = simplify(ot); s = apply(s, ot);
+    stages.push({ label: 'oll', moves: ot });
+    var pll = macroSearch(s, [uSet, { isU: false, list: MC.pll }], isSolved, keepLL, 7, 800000);
+    if (!pll) return null;
+    var pt = []; pll.forEach(function (mc) { pt = pt.concat(mc.toks); });
+    pt = simplify(pt); s = apply(s, pt);
+    stages.push({ label: 'pll', moves: pt });
+    return { stages: stages.filter(function (g) { return g.moves.length; }), final: s };
+  }
+
+  function planPair(s0, k, done) {
+    var s = s0, pre = [];
+    if (pairDone(s, k)) return { k: k, toks: [] };
+    /* get both pieces out of the lower layers first */
+    for (var guard = 0; guard < 4; guard++) {
+      var cp = s.cp.indexOf(4 + k), ep = s.ep.indexOf(8 + k);
+      var slot = -1;
+      if (cp >= 4) slot = cp - 4; else if (ep >= 8) slot = ep - 8;
+      if (slot < 0) break;
+      if (done.indexOf(slot) >= 0) return null;
+      var ex = MC.extract[slot][0];
+      s = mul(s, ex.c); pre = pre.concat(ex.toks);
+    }
+    var keep = function (st) { return crossDone(st) && done.every(function (j) { return pairDone(st, j); }); };
+    var sets = [{ isU: true, list: MC.u }, { isU: false, list: MC.pair[k] }];
+    var found = macroSearch(s, sets, function (st) { return pairDone(st, k); }, keep, 4, 300000);
+    if (!found) return null;
+    var toks = pre.slice();
+    found.forEach(function (mc) { toks = toks.concat(mc.toks); });
+    return { k: k, toks: simplify(toks) };
+  }
+
+  /* st: sticker state in the usual frame (white on top). Returns { moves, stages } for the cube turned over, or { error }. */
+  function solve(st) {
+    var t = st.map(function (k) { return { p: [-k.p[0], -k.p[1], k.p[2]], n: [-k.n[0], -k.n[1], k.n[2]], c: Z2[k.c] }; });
+    var cub = SV.toCubie(t);
+    if (cub.error) return { error: cub.error };
+    var bad = SV.problem(cub);
+    if (bad) return { error: bad };
+    var r = solveState(cub);
+    if (!r) return { error: 'The layer method could not find a route for this cube.' };
+    var moves = [];
+    r.stages.forEach(function (g) { moves = moves.concat(g.moves); });
+    return { moves: moves, stages: r.stages.map(function (g) { return { label: g.label, slot: g.slot, count: g.moves.length }; }) };
+  }
+  function flip(st) { return st.map(function (k) { return { p: [-k.p[0], -k.p[1], k.p[2]], n: [-k.n[0], -k.n[1], k.n[2]], c: k.c }; }); }
+  return { solve: solve, flip: flip, _init: function () { init(); buildMacros(); return { M: M, MC: MC, mul: mul, f2lDone: f2lDone, isSolved: isSolved, apply: apply }; } };
+})();
+/*ENDCFOP*/
 
 
 (function () {
@@ -2086,7 +2353,7 @@ var SV = (function () {
   };
   var scrMoves = el.moves, scrPlain = el.plain;
   var VIEW = 'scrambler';
-  var SOL = { moves: [], solved: false };
+  var SOL = { moves: [], solved: false, method: 'std', stages: null };
   var scrSaved = null;
   var state = { moves: [], hist: [], mode: 'random' };
 
@@ -2288,7 +2555,7 @@ var SV = (function () {
   })();
 
   function paintState() { return stateFromNet(paint); }
-  function startState() { return VIEW === 'solver' ? paintState() : VIEW === 'learn' ? lessonStart() : solved(); }
+  function startState() { return VIEW === 'solver' ? (SOL.method === 'f2l' && (SOL.moves.length || SOL.solved) ? CFOP.flip(paintState()) : paintState()) : VIEW === 'learn' ? lessonStart() : solved(); }
   function recolour() {
     cstate.forEach(function (k, i) { stickEls[i].setAttribute('data-c', k.c); });
   }
@@ -2347,7 +2614,7 @@ var SV = (function () {
     });
     var N = state.moves.length;
     el.netCap.textContent = N === 0 ? 'This is the cube you painted.' : (G.step >= N ? 'After all ' + N + ' moves. Your cube should match this.' : 'After move ' + G.step + ' of ' + N + '.') +
-      (VIEW === 'learn' ? ' Here white is on the bottom and green is in front. The top square sits above front, with left, front, right and back across the middle.' : ' Hold white on top and green in front. The top square sits above front, with left, front, right and back across the middle.');
+      (VIEW === 'learn' || (VIEW === 'solver' && SOL.method === 'f2l' && SOL.moves.length) ? ' Here white is on the bottom and green is in front. The top square sits above front, with left, front, right and back across the middle.' : ' Hold white on top and green in front. The top square sits above front, with left, front, right and back across the middle.');
   }
   el.netBtn.addEventListener('click', function () {
     var open = el.netbox.hidden;
@@ -2442,6 +2709,12 @@ var SV = (function () {
       el.nowMove.classList.remove('done');
       el.nowText.textContent = d.text;
       el.nowHint.textContent = d.hint + (faceHidden(m) ? ' This face is on the far side, so tap Flip view to see it.' : '');
+      if (VIEW === 'solver' && SOL.method === 'f2l' && SOL.stages) {
+        var si = stageAt(G.step);
+        el.count.textContent = si.name + ' \u00b7 move ' + (si.k + 1) + ' of ' + si.n;
+        if (G.step === 0) el.nowText.textContent = 'The cube is shown with white on the bottom, so turn yours over first. ' + d.text;
+        markStage(si.i);
+      }
     } else if (VIEW === 'solver' && N === 0) {
       el.count.textContent = '';
       el.nowMove.textContent = '\u2013';
@@ -3010,6 +3283,7 @@ var SV = (function () {
     if (SOL.moves.length || SOL.solved) {
       SOL.moves = [];
       SOL.solved = false;
+      SOL.stages = null;
       state.moves = SOL.moves;
       sp.out.hidden = true;
       renderMoves();
@@ -3075,6 +3349,60 @@ var SV = (function () {
     setPaintFrom(toNet(st));
     solStatus(mv.length ? 'Filled with your current scramble.' : 'There is no scramble yet, so this is a solved cube.');
   });
+  /* ---- solving method + stages ---- */
+  var METHOD_KEY = 'cubely-method';
+  var methodEl = document.getElementById('method');
+  var stagesEl = document.getElementById('solStages');
+  try { if (localStorage.getItem(METHOD_KEY) === 'f2l') SOL.method = 'f2l'; } catch (e) {}
+  function setMethodUI() {
+    Array.prototype.forEach.call(methodEl.querySelectorAll('button'), function (b) { b.setAttribute('aria-checked', b.getAttribute('data-m') === SOL.method ? 'true' : 'false'); });
+  }
+  setMethodUI();
+  methodEl.addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-m]');
+    if (!b || b.getAttribute('data-m') === SOL.method) return;
+    SOL.method = b.getAttribute('data-m');
+    try { localStorage.setItem(METHOD_KEY, SOL.method); } catch (x) {}
+    setMethodUI();
+    invalidate();
+    solStatus('');
+    queueRefresh();
+  });
+  var SLOT_NAMES = ['front-right', 'front-left', 'back-left', 'back-right'];
+  function stageList() {
+    var pairNo = 0, start = 0;
+    return (SOL.stages || []).map(function (g) {
+      var name = g.label === 'cross' ? 'White cross' : g.label === 'pair' ? 'Pair ' + (++pairNo) : g.label === 'oll' ? 'Top colour' : 'Finish';
+      var full = g.label === 'pair' ? 'Pair ' + pairNo + ' of 4 (' + SLOT_NAMES[g.slot] + ' slot)' : g.label === 'oll' ? 'Last layer: make the top one colour' : g.label === 'pll' ? 'Last layer: finish' : 'White cross';
+      var o = { short: name, full: full, start: start, n: g.count };
+      start += g.count;
+      return o;
+    });
+  }
+  function stageAt(step) {
+    var L = stageList();
+    for (var i = 0; i < L.length; i++) if (step < L[i].start + L[i].n) return { i: i, name: L[i].full, k: step - L[i].start, n: L[i].n };
+    return { i: L.length - 1, name: '', k: 0, n: 0 };
+  }
+  function renderStages() {
+    stagesEl.textContent = '';
+    if (!SOL.stages) { stagesEl.hidden = true; return; }
+    stageList().forEach(function (g, i) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.setAttribute('data-s', g.start);
+      b.textContent = g.short + ' · ' + g.n;
+      stagesEl.appendChild(b);
+    });
+    stagesEl.hidden = false;
+  }
+  function markStage(i) {
+    Array.prototype.forEach.call(stagesEl.children, function (b, j) { if (j === i) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current'); });
+  }
+  stagesEl.addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-s]');
+    if (b) jumpTo(parseInt(b.getAttribute('data-s'), 10));
+  });
+
   function doSolve() {
     var d = diagnose();
     renderPaint();
@@ -3090,12 +3418,18 @@ var SV = (function () {
     sp.solve.disabled = true;
     setTimeout(function () {
       var r;
-      try { r = SV.solve(paintState()); } catch (x) { r = { error: 'Something went wrong while solving. Check the colours and try again.' }; }
+      var fellBack = false;
+      try {
+        if (SOL.method === 'f2l') { r = CFOP.solve(paintState()); if (r.error && /^The layer method/.test(r.error)) { r = SV.solve(paintState()); fellBack = true; } }
+        else r = SV.solve(paintState());
+      } catch (x) { r = { error: 'Something went wrong while solving. Check the colours and try again.' }; }
       sp.solve.disabled = false;
       if (VIEW !== 'solver') return;
       if (r.error) { deepIssue = r.error + ' Compare each corner and edge with your cube, going around it the same way every time.'; renderPaint(); solStatus('This colouring cannot be a real cube. See the note under the net.', true); return; }
       SOL.moves = r.moves;
       SOL.solved = r.moves.length === 0;
+      SOL.stages = SOL.method === 'f2l' && !fellBack && r.stages && r.stages.length ? r.stages : null;
+      if (fellBack) { SOL.method = 'std'; setMethodUI(); }
       state.moves = SOL.moves;
       if (SOL.solved) {
         sp.out.hidden = true;
@@ -3105,11 +3439,12 @@ var SV = (function () {
         return;
       }
       sp.out.hidden = false;
-      sp.title.textContent = 'Solution · ' + r.moves.length + (r.moves.length === 1 ? ' move' : ' moves');
+      sp.title.textContent = 'Solution · ' + r.moves.length + (r.moves.length === 1 ? ' move' : ' moves') + (SOL.stages ? ' · F2L method' : '');
+      renderStages();
       renderMoves();
       jumpTo(0);
       if (phoneMQ.matches) setTimeout(function () { pagerGo(1); }, 150);
-      solStatus('Solved in ' + r.moves.length + (r.moves.length === 1 ? ' move.' : ' moves. Follow the guide on the cube, one move at a time.'));
+      solStatus(fellBack ? 'The F2L method could not handle this one, so here is the standard solution instead. It is ' + r.moves.length + ' moves.' : SOL.stages ? 'Solved in ' + r.moves.length + ' moves, in stages. Turn your cube so white is on the bottom, then follow the guide.' : 'Solved in ' + r.moves.length + (r.moves.length === 1 ? ' move.' : ' moves. Follow the guide on the cube, one move at a time.'));
     }, 40);
   }
   sp.solve.addEventListener('click', doSolve);
@@ -3397,6 +3732,9 @@ var SV = (function () {
   function placeTips() {
     if (!tipsEl) return;
     var nudge = document.getElementById('learnNudge');
+    var meth = document.getElementById('method'), svRow = document.querySelector('#solverCard > .row');
+    if (phoneMQ.matches) meth.parentNode !== document.querySelector('#solverCard .sv-left') && document.querySelector('#solverCard .sv-left').insertBefore(meth, document.querySelector('#solverCard .sv-left > .actions'));
+    else svRow.insertBefore(meth, document.getElementById('nudgeBtn2'));
     if (phoneMQ.matches) { var slot = document.getElementById('helpSlot'); slot.appendChild(tipsEl); slot.insertBefore(nudge, tipsEl); tipsEl.open = true; }
     else { var anchor = document.getElementById('solOut'); anchor.parentNode.insertBefore(tipsEl, anchor); tipsEl.open = false; var sv = document.getElementById('solverCard'); sv.insertBefore(nudge, sv.children[1]); }
   }
@@ -3443,6 +3781,7 @@ var SV = (function () {
   tp.tab.addEventListener('click', function () { showTab('timer'); });
   lrn.tab.addEventListener('click', function () { showTab('learn'); });
   document.getElementById('nudgeBtn').addEventListener('click', function () { showTab('learn'); });
+  document.getElementById('nudgeBtn2').addEventListener('click', function () { showTab('learn'); });
   window.addEventListener('hashchange', function () { showTab(location.hash.slice(1), true); });
   loadPaint();
   renderPaint();
