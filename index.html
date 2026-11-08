@@ -1561,8 +1561,6 @@ try {
         <h3 class="lrn-title" id="lrnTitle"></h3>
         <p id="lrnSee"></p>
         <p id="lrnIdea"></p>
-        <div class="stg" id="lrnStages" aria-label="Stages" hidden></div>
-        <button class="btn ghost small" id="lrnEdit" type="button" hidden>Colour a different cube</button>
         <ol class="moves" id="lrnMoves" aria-label="Lesson moves" hidden></ol>
         <p class="plain" id="lrnPlain" hidden></p>
       </div>
@@ -3265,9 +3263,7 @@ var CFOP = (function () {
       palCnt[c].textContent = counts[c] + '/9';
       palCnt[c].className = 'cnt' + (counts[c] === 9 ? ' ok' : counts[c] > 9 ? ' bad' : '');
     });
-    var dg = diagnose();
-    renderIssues(dg);
-    updateNudge(!dg.issues.length && !dg.empty);
+    renderIssues(diagnose());
     return counts;
   }
   function pickColor(c) {
@@ -3355,14 +3351,6 @@ var CFOP = (function () {
     setPaintFrom(toNet(st));
     solStatus(mv.length ? 'Filled with your current scramble.' : 'There is no scramble yet, so this is a solved cube.');
   });
-  function updateNudge(ready) {
-    document.getElementById('nudgeBtn').textContent = ready ? 'Learn on my cube' : 'Start learning';
-    document.getElementById('nudgeBtn2').textContent = ready ? 'Learn on my cube' : 'Learn F2L';
-    var st = document.querySelector('#learnNudge span strong');
-    if (st) st.textContent = ready ? 'Your cube is ready.' : 'New to F2L?';
-    var more = document.querySelector('#learnNudge .more');
-    if (more) more.textContent = ready ? ' Walk through solving it step by step.' : ' Learn to solve the first two layers yourself, one easy step at a time.';
-  }
   /* ---- solving method + stages ---- */
   var METHOD_KEY = 'cubely-method';
   var methodEl = document.getElementById('method');
@@ -3383,9 +3371,9 @@ var CFOP = (function () {
     queueRefresh();
   });
   var SLOT_NAMES = ['front-right', 'front-left', 'back-left', 'back-right'];
-  function stageList(stg) {
+  function stageList() {
     var pairNo = 0, start = 0;
-    return (stg || SOL.stages || []).map(function (g) {
+    return (SOL.stages || []).map(function (g) {
       var name = g.label === 'cross' ? 'White cross' : g.label === 'pair' ? 'Pair ' + (++pairNo) : g.label === 'oll' ? 'Top colour' : 'Finish';
       var full = g.label === 'pair' ? 'Pair ' + pairNo + ' of 4 (' + SLOT_NAMES[g.slot] + ' slot)' : g.label === 'oll' ? 'Last layer: make the top one colour' : g.label === 'pll' ? 'Last layer: finish' : 'White cross';
       var o = { short: name, full: full, start: start, n: g.count };
@@ -3393,25 +3381,24 @@ var CFOP = (function () {
       return o;
     });
   }
-  function stageAt(step, stg) {
-    var L = stageList(stg);
+  function stageAt(step) {
+    var L = stageList();
     for (var i = 0; i < L.length; i++) if (step < L[i].start + L[i].n) return { i: i, name: L[i].full, k: step - L[i].start, n: L[i].n };
     return { i: L.length - 1, name: '', k: 0, n: 0 };
   }
-  function renderStages(el2, stg) {
-    el2 = el2 || stagesEl; stg = stg || SOL.stages;
-    el2.textContent = '';
-    if (!stg) { el2.hidden = true; return; }
-    stageList(stg).forEach(function (g, i) {
+  function renderStages() {
+    stagesEl.textContent = '';
+    if (!SOL.stages) { stagesEl.hidden = true; return; }
+    stageList().forEach(function (g, i) {
       var b = document.createElement('button');
       b.type = 'button'; b.setAttribute('data-s', g.start);
       b.textContent = g.short + ' · ' + g.n;
-      el2.appendChild(b);
+      stagesEl.appendChild(b);
     });
-    el2.hidden = false;
+    stagesEl.hidden = false;
   }
-  function markStage(i, el2) {
-    Array.prototype.forEach.call((el2 || stagesEl).children, function (b, j) { if (j === i) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current'); });
+  function markStage(i) {
+    Array.prototype.forEach.call(stagesEl.children, function (b, j) { if (j === i) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current'); });
   }
   stagesEl.addEventListener('click', function (e) {
     var b = e.target.closest('button[data-s]');
@@ -3483,8 +3470,7 @@ var CFOP = (function () {
     chips: document.getElementById('lrnChips'), prog: document.getElementById('lrnProg'),
     title: document.getElementById('lrnTitle'), see: document.getElementById('lrnSee'), idea: document.getElementById('lrnIdea'),
     moves: document.getElementById('lrnMoves'), plain: document.getElementById('lrnPlain'),
-    prev: document.getElementById('lrnPrev'), next: document.getElementById('lrnNext'),
-    stages: document.getElementById('lrnStages'), edit: document.getElementById('lrnEdit')
+    prev: document.getElementById('lrnPrev'), next: document.getElementById('lrnNext')
   };
   var LRN = { i: 0, done: {} };
   try {
@@ -3543,29 +3529,16 @@ var CFOP = (function () {
         'Swings the corner up and back so it lands right next to its edge. The pair is joined.'].concat(PAIR_WHY) },
     { id: 'outro', title: 'Putting it together',
       see: 'You now know the building blocks. Solving the first two layers is just a loop.',
-      idea: 'Pick a slot and turn the whole cube so that slot is at the front-right. Find its corner and its edge, bring them next to each other on top, then insert them with a lesson above. Repeat for all four slots. Full F2L has 41 cases, but nearly all are these ideas in a different pose. Then try it on your own cube with the last lesson: colour it in on the Solver and press Learn on my cube.',
-      intro: 'Turn the whole cube to bring each unsolved slot to the front-right, then use the lessons. You have got this.' },
-    { id: 'mine', title: 'Your cube, step by step', mine: true, see: '', idea: '' }
+      idea: 'Pick a slot and turn the whole cube so that slot is at the front-right. Find its corner and its edge, bring them next to each other on top, then insert them with a lesson above. Repeat for all four slots. Full F2L has 41 cases, but nearly all are these ideas in a different pose. You can colour in your own cube in the Solver to practise.',
+      intro: 'Turn the whole cube to bring each unsolved slot to the front-right, then use the lessons. You have got this.' }
   ];
-  var TOTAL = LESSONS.length - 1;
   function lesson() { return LESSONS[LRN.i]; }
-  function lessonMoves() { var l = lesson(); if (l.mine) return LRN.mine ? LRN.mine.moves : []; return l.alg ? l.alg.split(' ') : []; }
-  function paintReady() { var d = diagnose(); return !d.issues.length && !d.empty; }
-  function buildMine() {
-    LRN.mine = null;
-    if (!paintReady()) return null;
-    var p = paintState(), r;
-    try { r = CFOP.solve(p); } catch (e) { return null; }
-    if (r.error) return null;
-    LRN.mine = { paint: p, moves: r.moves, stages: r.stages.length ? r.stages : null };
-    return LRN.mine;
-  }
+  function lessonMoves() { var l = lesson(); return l.alg ? l.alg.split(' ') : []; }
   var Z2 = { U: 'D', D: 'U', L: 'R', R: 'L', F: 'F', B: 'B' };
   function lessonStart() {
-    var l = lesson();
-    if (l.mine && LRN.mine) return CFOP.flip(LRN.mine.paint);
     var st = solved();
     st.forEach(function (k) { k.c = Z2[faceOf(k.n)]; });
+    var l = lesson();
     if (l.alg && !l.plain) {
       l.alg.split(' ').reverse().forEach(function (m) { applyMove(st, invertMove(m)); });
     }
@@ -3596,10 +3569,8 @@ var CFOP = (function () {
     return 'Right now: the corner is ' + (posName(c[0].p) === 'the slot' ? 'in the slot' : 'at the ' + posName(c[0].p)) + ' with white facing ' + FACE_NAME[faceOf(w.n)] +
       ', and the edge is ' + (posName(e[0].p) === 'the slot' ? 'in the slot' : 'at the ' + posName(e[0].p)) + ' with green facing ' + FACE_NAME[faceOf(g.n)] + '.';
   }
-  var PURPOSE = { cross: 'Build the white cross on the bottom, with each edge matching the side colour next to it.', pair: 'Join this white corner to its edge and slot them in together.', oll: 'Make the whole top face one colour.', pll: 'Move the top pieces into their right places.' };
   function lessonAfter(m, N) {
     var l = lesson();
-    if (l.mine) { mineAfter(m, N); return; }
     if (m) {
       var d = describe(m);
       el.count.textContent = 'Move ' + (G.step + 1) + ' of ' + N;
@@ -3622,74 +3593,34 @@ var CFOP = (function () {
       if (!LRN.done[l.id]) { LRN.done[l.id] = true; saveDone(); renderChips(); }
     }
   }
-  function mineAfter(m, N) {
-    var M = LRN.mine;
-    if (!M) {
-      el.count.textContent = ''; el.nowMove.textContent = '\u2013'; el.nowMove.classList.remove('done');
-      el.nowText.textContent = 'Colour in your cube on the Solver, then press Learn on my cube.';
-      el.nowHint.textContent = '';
-      return;
-    }
-    if (m) {
-      var d = describe(m), si = M.stages ? stageAt(G.step, M.stages) : null;
-      el.count.textContent = si ? si.name + ' \u00b7 move ' + (si.k + 1) + ' of ' + si.n : 'Move ' + (G.step + 1) + ' of ' + N;
-      el.nowMove.textContent = m; el.nowMove.classList.remove('done');
-      var lead = '';
-      if (G.step === 0) lead = 'Your cube is shown with white on the bottom, so turn yours over first. ';
-      else if (si && si.k === 0) lead = PURPOSE[M.stages[si.i].label] + ' ';
-      el.nowText.textContent = lead + d.text;
-      el.nowHint.textContent = d.hint + (faceHidden(m) ? ' This face is on the far side, so tap Flip view to see it.' : '');
-      if (si) markStage(si.i, lrn.stages);
-    } else if (N === 0) {
-      el.count.textContent = ''; el.nowMove.textContent = '\u2013'; el.nowMove.classList.remove('done');
-      el.nowText.textContent = 'Your cube is already solved.'; el.nowHint.textContent = '';
-    } else {
-      el.count.textContent = 'All ' + N + ' moves done'; el.nowMove.textContent = 'Solved'; el.nowMove.classList.add('done');
-      el.nowText.textContent = 'Your cube is solved! You just did cross, F2L and the last layer.';
-      el.nowHint.textContent = 'Press Restart to go through it again.';
-    }
-  }
   function renderChips() {
     lrn.chips.textContent = '';
     var n = 0;
     LESSONS.forEach(function (l, i) {
-      if (!l.mine && LRN.done[l.id]) n++;
+      if (LRN.done[l.id]) n++;
       var li = document.createElement('li');
       var b = document.createElement('button');
       b.type = 'button';
       b.setAttribute('data-i', i);
       b.className = LRN.done[l.id] ? 'done' : '';
-      b.textContent = l.mine ? '\u2605' : (LRN.done[l.id] ? '✓ ' : '') + (i + 1);
-      b.setAttribute('aria-label', l.mine ? 'Your cube' : 'Lesson ' + (i + 1) + ': ' + l.title + (LRN.done[l.id] ? ', completed' : ''));
+      b.textContent = (LRN.done[l.id] ? '✓ ' : '') + (i + 1);
+      b.setAttribute('aria-label', 'Lesson ' + (i + 1) + ': ' + l.title + (LRN.done[l.id] ? ', completed' : ''));
       if (i === LRN.i) b.setAttribute('aria-current', 'true');
       li.appendChild(b);
       lrn.chips.appendChild(li);
     });
-    lrn.prog.textContent = n + ' of ' + TOTAL + ' done';
+    lrn.prog.textContent = n + ' of ' + LESSONS.length + ' done';
   }
   function renderLearn() {
     var l = lesson();
     renderChips();
-    var see = l.see, idea = l.idea;
-    if (l.mine) {
-      if (LRN.mine) {
-        see = LRN.mine.moves.length ? 'This is the cube you coloured in, shown with white on the bottom. It is solved in stages, so each part has its own goal. Tap a stage to jump to it.' : 'The cube you coloured in is already solved.';
-        idea = LRN.mine.stages ? 'Cross first, then one pair at a time, then the top layer. Step through with Next, or press Play.' : '';
-      } else {
-        see = 'Colour in your own cube on the Solver (every square filled, and a cube that can really exist), then press Learn on my cube.';
-        idea = 'You get a step-by-step walk through of your own cube: the white cross, the four F2L pairs, then the last layer.';
-      }
-    }
-    lrn.title.textContent = l.mine ? l.title : (LRN.i + 1) + '. ' + l.title;
+    lrn.title.textContent = (LRN.i + 1) + '. ' + l.title;
     lrn.see.innerHTML = '';
     var sb = document.createElement('b'); sb.textContent = l.alg ? 'What you will see: ' : '';
-    lrn.see.appendChild(sb); lrn.see.appendChild(document.createTextNode(see));
+    lrn.see.appendChild(sb); lrn.see.appendChild(document.createTextNode(l.see));
     lrn.idea.innerHTML = '';
     var ib = document.createElement('b'); ib.textContent = l.alg ? 'The idea: ' : '';
-    lrn.idea.appendChild(ib); lrn.idea.appendChild(document.createTextNode(idea));
-    lrn.idea.hidden = !idea;
-    lrn.edit.hidden = !l.mine;
-    if (l.mine && LRN.mine && LRN.mine.stages) renderStages(lrn.stages, LRN.mine.stages); else lrn.stages.hidden = true;
+    lrn.idea.appendChild(ib); lrn.idea.appendChild(document.createTextNode(l.idea));
     var has = state.moves.length > 0;
     lrn.moves.hidden = !has; lrn.plain.hidden = !has;
     lrn.prev.disabled = LRN.i === 0;
@@ -3700,7 +3631,6 @@ var CFOP = (function () {
     if (i < 0 || i >= LESSONS.length) return;
     LRN.i = i;
     pause();
-    if (LESSONS[i].mine) buildMine();
     state.moves = lessonMoves();
     renderLearn();
     renderMoves();
@@ -3716,11 +3646,6 @@ var CFOP = (function () {
     var b = e.target.closest('button[data-i]');
     if (b) jumpTo(parseInt(b.getAttribute('data-i'), 10));
   });
-  lrn.stages.addEventListener('click', function (e) {
-    var b = e.target.closest('button[data-s]');
-    if (b) jumpTo(parseInt(b.getAttribute('data-s'), 10));
-  });
-  lrn.edit.addEventListener('click', function () { showTab('solver'); });
   lrn.prev.addEventListener('click', function () { selectLesson(LRN.i - 1, false); });
   lrn.next.addEventListener('click', function () { selectLesson(LRN.i + 1, true); });
 
@@ -3857,12 +3782,8 @@ var CFOP = (function () {
   sp.tabSol.addEventListener('click', function () { showTab('solver'); });
   tp.tab.addEventListener('click', function () { showTab('timer'); });
   lrn.tab.addEventListener('click', function () { showTab('learn'); });
-  function goLearn() {
-    showTab('learn');
-    if (paintReady()) selectLesson(LESSONS.length - 1, true);
-  }
-  document.getElementById('nudgeBtn').addEventListener('click', goLearn);
-  document.getElementById('nudgeBtn2').addEventListener('click', goLearn);
+  document.getElementById('nudgeBtn').addEventListener('click', function () { showTab('learn'); });
+  document.getElementById('nudgeBtn2').addEventListener('click', function () { showTab('learn'); });
   window.addEventListener('hashchange', function () { showTab(location.hash.slice(1), true); });
   loadPaint();
   renderPaint();
