@@ -847,7 +847,7 @@ kbd { font: 500 0.7rem var(--font-mono); padding: 1px 6px; border-radius: 5px; b
 .sel-btn .chev { width: 12px; height: 8px; flex: none; transition: transform 0.2s ease; }
 .sel-btn[aria-expanded="true"] .chev { transform: rotate(180deg); }
 .sel-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-.sel-list { position: fixed; z-index: 60; margin: 0; padding: 6px; list-style: none; background: var(--surface); border: 1.5px solid var(--line); border-radius: 18px; box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22); overflow-y: auto; overscroll-behavior: contain; }
+.sel-list { touch-action: pan-y; -webkit-overflow-scrolling: touch; position: fixed; z-index: 60; margin: 0; padding: 6px; list-style: none; background: var(--surface); border: 1.5px solid var(--line); border-radius: 18px; box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22); overflow-y: auto; overscroll-behavior: contain; }
 .sel-list:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .sel-opt { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 12px; cursor: pointer; font: 600 0.95rem var(--font-ui); color: var(--ink); min-height: 40px; }
 .sel-opt.active { background: var(--accent-soft); }
@@ -2126,7 +2126,7 @@ var SV = (function () {
       if (up) { list.style.top = 'auto'; list.style.bottom = (window.innerHeight - r.top + 6) + 'px'; }
       else { list.style.bottom = 'auto'; list.style.top = (r.bottom + 6) + 'px'; }
       btn.setAttribute('aria-expanded', 'true');
-      selOpen = { btn: btn, list: list };
+      selOpen = { btn: btn, list: list }; selW = window.innerWidth;
       mark(sel.selectedIndex);
       list.focus({ preventScroll: true });
     }
@@ -2148,8 +2148,9 @@ var SV = (function () {
     sync();
   }
   document.addEventListener('pointerdown', function (e) { if (selOpen && !(e.target.closest && (e.target.closest('.sel-list') || e.target.closest('.sel-btn')))) closeSel(); });
-  window.addEventListener('resize', closeSel);
-  window.addEventListener('scroll', closeSel, true);
+  var selW = 0;
+  window.addEventListener('resize', function () { if (selOpen && window.innerWidth !== selW) closeSel(); });
+  window.addEventListener('scroll', function (e) { if (selOpen && !(e.target && e.target.nodeType === 1 && selOpen.list.contains(e.target))) closeSel(); }, true);
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSel(); });
   ['mode', 'len', 'speed'].forEach(function (id) { enhanceSelect(document.getElementById(id)); });
   function updateModeUI() {
