@@ -852,12 +852,44 @@ kbd { font: 500 0.7rem var(--font-mono); padding: 1px 6px; border-radius: 5px; b
   .pal { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .moves li button { padding: 14px 2px 6px; }
   #noteBox { padding: 8px 12px; font-size: 0.78rem; line-height: 1.35; }
+  #noteBox, #scrCard .plain { display: none; }
+  /* guide: tight three-row controls, smaller cube, no long hints */
+  .guide .cap, .guide .now-text .hint { display: none; }
+  .guide #netCap { display: block; font-size: 0.8rem; line-height: 1.3; }
+  .guide .scene { --s: clamp(24px, min(9cqw, 5.4vh), 56px); }
+  .guide .g-body, .g-view, .g-side { gap: 8px; }
+  .g-side { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 6px; align-items: center; }
+  .g-side > .now, .g-side > #netBtn, .g-side > .netbox, .g-side > .cap { grid-column: 1 / -1; }
+  .g-side > .ctrls { display: contents; }
+  .g-side #back { order: 1; grid-column: span 3; } .g-side #play { order: 2; grid-column: span 3; } .g-side #next { order: 3; grid-column: span 3; } .g-side #flip { order: 4; grid-column: span 3; }
+  .g-side .ctrls > label.len { order: 5; grid-column: span 5; } .g-side #restart { order: 6; grid-column: span 3; } .g-side #end { order: 7; grid-column: span 4; }
+  .g-side > #netBtn { order: 8; } .g-side > .netbox { order: 9; }
+  .g-side .ctrls .btn { padding: 0.4rem 0.2rem; font-size: 0.8rem; min-width: 0; white-space: nowrap; }
+  .g-side .ctrls label.len { font-size: 0.75rem; gap: 4px; min-width: 0; }
+  .g-side .ctrls select { min-width: 0; flex: 1 1 0; font-size: 0.78rem; padding: 0.3rem 0.2rem; }
+  /* timer: compact left card */
+  #tHint { display: none; }
+  #tCard .tscr { font-size: 0.85rem; line-height: 1.35; }
+  #tCard .actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  #tCard .actions .btn { padding: 0.45rem 0.2rem; font-size: 0.8rem; }
+  #tCard .tstats { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
+  #tCard .tstats > div { padding: 6px 4px; min-width: 0; }
+  #tCard .tstats dt { font-size: 0.56rem; letter-spacing: 0.02em; }
+  #tCard .tstats dd { font-size: 0.95rem; }
+  .tface { flex: 1 1 auto; min-height: 120px; }
+  /* solver: palette stays pinned in one row */
+  #solverCard .pal { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; position: sticky; top: -12px; z-index: 3; background: var(--surface); padding: 12px 0 6px; margin-top: -12px; }
+  #solverCard .pal button { padding: 4px 0 3px; font-size: 0.6rem; }
+  #solverCard .pal .st { width: 20px; height: 20px; }
+  #solverCard .cap { display: none; }
+  .sv-left .actions { flex-wrap: nowrap; gap: 5px; }
+  .sv-left .actions .btn { font-size: 0.78rem; padding: 0.4rem 0.5rem; white-space: nowrap; }
 }
 
 /* ---------- Phones and foldable cover screens: an app-like layout that fits the screen, with swipeable pages ---------- */
 .pager { display: none; }
 #helpCard { display: none; }
-#histCard, #noteBox { grid-column: 1 / -1; }
+@media not all and (min-width: 600px) and (min-height: 520px) { #histCard, #noteBox { grid-column: 1 / -1; } }
 @media (max-width: 599px) and (min-height: 480px) {
   html, body { height: 100%; }
   body { height: 100dvh; margin: 0; box-sizing: border-box; overflow: hidden; padding-top: max(8px, env(safe-area-inset-top, 0px)); padding-bottom: max(8px, env(safe-area-inset-bottom, 0px)); padding-left: max(10px, env(safe-area-inset-left, 0px)); padding-right: max(10px, env(safe-area-inset-right, 0px)); }
