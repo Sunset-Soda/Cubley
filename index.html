@@ -882,7 +882,7 @@ kbd { font: 500 0.7rem var(--font-mono); padding: 1px 6px; border-radius: 5px; b
   #solverCard .pal button { padding: 4px 0 3px; font-size: 0.6rem; }
   #solverCard .pal .st { width: 20px; height: 20px; }
   #solverCard .cap { display: none; }
-  .sv-left .actions { flex-wrap: nowrap; gap: 5px; }
+  .sv-left .actions { flex-wrap: wrap; gap: 5px; }
   .sv-left .actions .btn { font-size: 0.78rem; padding: 0.4rem 0.5rem; white-space: nowrap; }
 }
 
@@ -890,7 +890,7 @@ kbd { font: 500 0.7rem var(--font-mono); padding: 1px 6px; border-radius: 5px; b
 .pager { display: none; }
 #helpCard { display: none; }
 @media not all and (min-width: 600px) and (min-height: 520px) { #histCard, #noteBox { grid-column: 1 / -1; } }
-@media (max-width: 599px) and (min-height: 480px) {
+@media (max-width: 599px) and (min-height: 480px), (max-height: 479px) and (min-width: 560px) {
   html, body { height: 100%; }
   body { height: 100dvh; margin: 0; box-sizing: border-box; overflow: hidden; padding-top: max(8px, env(safe-area-inset-top, 0px)); padding-bottom: max(8px, env(safe-area-inset-bottom, 0px)); padding-left: max(10px, env(safe-area-inset-left, 0px)); padding-right: max(10px, env(safe-area-inset-right, 0px)); }
   .wrap { height: 100%; max-width: none; margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr); gap: 8px; }
@@ -936,7 +936,7 @@ kbd { font: 500 0.7rem var(--font-mono); padding: 1px 6px; border-radius: 5px; b
   #solverCard .pal button { padding: 4px 0 3px; font-size: 0.58rem; }
   #solverCard .pal .st { width: 20px; height: 20px; }
   #solverCard .pal .cnt { font-size: 0.56rem; }
-  .sv-left .actions { flex-wrap: nowrap; gap: 5px; }
+  .sv-left .actions { flex-wrap: wrap; gap: 5px; }
   .sv-left .actions .btn { font-size: 0.74rem; padding: 0.4rem 0.45rem; white-space: nowrap; }
   .sv-left, .sv-body { gap: 8px; }
   /* timer page: no hint text on a touch screen, tight buttons and stats */
@@ -969,11 +969,39 @@ kbd { font: 500 0.7rem var(--font-mono); padding: 1px 6px; border-radius: 5px; b
   .g-side .row, .g-side .actions { gap: 6px; }
   .guide .btn { padding: 0.4rem 0.8rem; }
 }
-@media (max-width: 599px) and (min-height: 480px) and (max-height: 700px) {
+@media (max-width: 599px) and (min-height: 480px) and (max-height: 700px), (max-height: 479px) and (min-width: 560px) {
   .stage > .card { padding: 10px; gap: 8px; }
   .guide .scene { --s: clamp(24px, min(9cqw, 4.4vh), 44px); }
   .wrap > header .tabs .tab { min-height: 40px; }
   .pager button { min-height: 34px; }
+}
+
+/* landscape phones: header on one line, cards fill the short screen */
+@media (max-height: 479px) and (min-width: 560px) {
+  body { padding-block: max(6px, env(safe-area-inset-top, 0px)) max(6px, env(safe-area-inset-bottom, 0px)); }
+  .wrap { gap: 6px; }
+  .wrap > header { flex-wrap: nowrap; }
+  .wrap > header .tabs { order: 2; flex: 0 0 auto; width: auto; }
+  .wrap > header .tabs .tab { min-height: 38px; padding-inline: 14px; }
+  .wrap > header .skins { order: 3; flex: 1 1 0; max-width: 240px; margin-left: auto; }
+  .wrap > header .dd-btn { min-height: 38px; }
+  .pager button { min-height: 30px; }
+  .stage > .card { padding: 8px 12px; gap: 6px; }
+  .guide .scene { --s: clamp(22px, 8vh, 40px); }
+  .moves { grid-template-columns: repeat(10, minmax(0, 1fr)); }
+  .moves li { padding-block: 8px 4px; }
+  /* solver: net on the left at full height, palette and buttons beside it */
+  #solverCard .sv-body { display: grid; grid-template-columns: max-content minmax(0, 1fr); grid-template-rows: auto auto auto auto 1fr; column-gap: 14px; row-gap: 8px; align-items: start; }
+  #solverCard .sv-left, #solverCard .sv-right { display: contents; }
+  #solverCard .sv-body > * , #solverCard .sv-left > *, #solverCard .sv-right > * { grid-column: 2; }
+  #solverCard .net.paint { grid-column: 1; grid-row: 1 / 6; width: min(46vw, calc((100dvh - 118px) * 1.3)); max-width: none; align-self: start; }
+  #solverCard .pal { position: static; margin: 0; padding: 0; }
+  #solverCard .sv-left .actions { flex-wrap: wrap; }
+  /* timer: shrink the face so the buttons and stats show */
+  .wrap .ttime { font-size: clamp(2.2rem, 20vh, 4.2rem); }
+  :root[data-skin] .wrap .ttime { font-size: clamp(2.2rem, 20vh, 4.2rem); }
+  .tface { min-height: 0; flex: 1 1 0; }
+  #tCard .tscr { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 }
 </style>
 <script>
@@ -2910,7 +2938,7 @@ var SV = (function () {
       sp.title.textContent = 'Solution · ' + r.moves.length + (r.moves.length === 1 ? ' move' : ' moves');
       renderMoves();
       jumpTo(0);
-      if (window.matchMedia('(max-width: 599px)').matches) setTimeout(function () { pagerGo(1); }, 150);
+      if (phoneMQ.matches) setTimeout(function () { pagerGo(1); }, 150);
       solStatus('Solved in ' + r.moves.length + (r.moves.length === 1 ? ' move.' : ' moves. Follow the guide on the cube, one move at a time.'));
     }, 40);
   }
@@ -3001,7 +3029,7 @@ var SV = (function () {
     [].forEach.call(pagerEl.children, function (b, i) { b.setAttribute('aria-current', i === best ? 'true' : 'false'); });
   }
   var helpCardEl = document.getElementById('helpCard'), tipsEl = document.querySelector('#solverCard details.tips');
-  var phoneMQ = window.matchMedia('(max-width: 599px) and (min-height: 480px)');
+  var phoneMQ = window.matchMedia('(max-width: 599px) and (min-height: 480px), (max-height: 479px) and (min-width: 560px)');
   function placeTips() {
     if (!tipsEl) return;
     if (phoneMQ.matches) { document.getElementById('helpSlot').appendChild(tipsEl); tipsEl.open = true; }
