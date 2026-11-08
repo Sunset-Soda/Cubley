@@ -3371,9 +3371,11 @@ var CFOP = (function () {
     SOL.method = b.getAttribute('data-m');
     try { localStorage.setItem(METHOD_KEY, SOL.method); } catch (x) {}
     setMethodUI();
+    var had = SOL.moves.length || SOL.solved;
     invalidate();
     solStatus('');
     queueRefresh();
+    if (had) doSolve(); else solStatus(SOL.method === 'f2l' ? 'F2L method selected. Colour in your cube and press Solve.' : 'Standard method selected.');
   });
   var SLOT_NAMES = ['front-right', 'front-left', 'back-left', 'back-right'];
   function stageList() {
