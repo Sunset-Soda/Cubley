@@ -803,6 +803,8 @@ kbd { font: 500 0.7rem var(--font-mono); padding: 1px 6px; border-radius: 5px; b
 .stg button { border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--ink); font: 600 0.75rem var(--font-ui); padding: 4px 10px; cursor: pointer; }
 .stg button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .stg button[aria-current="true"] { background: var(--accent-soft); box-shadow: 0 0 0 2px var(--accent); }
+#solverCard > *, #solverCard .sv-left > * { flex-shrink: 0; }
+#solverCard > .row { position: relative; z-index: 4; }
 #solverCard > .row .method { flex: 0 1 300px; }
 @media (max-height: 720px), (max-width: 1239px) { .method button small { display: none; } .method button { padding: 5px 9px; } #solverCard > .row { flex-wrap: nowrap; } #solverCard > .row .eyebrow { display: none; } #solverCard > .row .method { flex: 1 1 auto; } }
 .learnnudge { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; padding: 10px 12px; border-radius: var(--r-tile); background: var(--accent-soft); border: 1px solid var(--line); font-size: 0.88rem; line-height: 1.35; color: var(--ink); }
