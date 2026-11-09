@@ -2182,7 +2182,7 @@ var CFOP = (function () {
     var toks = alg.split(' ').map(function (t) { return PHI[k || 0][t.charAt(0)] + t.slice(1); });
     var c = ID;
     toks.forEach(function (t) { c = mul(c, M[tok(t)]); });
-    return { toks: toks, c: c };
+    return { toks: toks, c: c, base: alg.split(' '), k: k || 0, f: alg.split(' ').length === 1 ? toks[0].charAt(0) : null };
   }
   var UTURNS = ['U', 'U2', "U'"];
   var PAIR_ALGS = ["U R U' R'", "U' F' U F", "R U R'", "F' U' F", "R U2 R' U' R U R'", "R U' R' U R U' R'", "R U R' U' R U R'", "R U' R' U2 R U R'",
@@ -2210,24 +2210,26 @@ var CFOP = (function () {
   /* depth-limited search over macros; check(s) says whether we are done, keep(s) prunes states that broke earlier work */
   function macroSearch(start, sets, check, keep, maxDepth, budget) {
     var path = [], nodes = 0, over = false;
-    function go(s, d, lastU) {
+    function go(s, d, lastU, lastF) {
       if (d === 0) return check(s);
       if (++nodes > budget) { over = true; return false; }
       for (var si = 0; si < sets.length; si++) {
         var set = sets[si], isU = set.isU;
         if (isU && lastU) continue;
         for (var i = 0; i < set.list.length; i++) {
-          var mc = set.list[i], ns = mul(s, mc.c);
+          var mc = set.list[i];
+          if (mc.f && mc.f === lastF) continue;
+          var ns = mul(s, mc.c);
           if (!keep(ns)) continue;
           path.push(mc);
-          if (go(ns, d - 1, isU)) return true;
+          if (go(ns, d - 1, isU, mc.f)) return true;
           path.pop();
           if (over) return false;
         }
       }
       return false;
     }
-    for (var dd = 0; dd <= maxDepth; dd++) { path = []; if (go(start, dd, false)) return path; if (over) return null; }
+    for (var dd = 0; dd <= maxDepth; dd++) { path = []; if (go(start, dd, false, null)) return path; if (over) return null; }
     return null;
   }
 
@@ -2312,172 +2314,169 @@ var CFOP = (function () {
   }
 
   /* ---- beginner layer-by-layer method (white cross, corners, middle edges, then the top layer in four steps) ---- */
-  var BM = null;
+  /* ---- the Rubik's guide: yellow on top, daisy, white cross, corners, middle layer, then four yellow steps ---- */
+  var BM = null, FM = null;
+  function H(alg, k) { var m = macro(alg, k); m.hold = true; return m; }
   function buildBeginner() {
     if (BM) return;
-    BM = { sexy: [], insR: [], insL: [], oll: macro("F R U R' U' F'", 0), sune: macro("R U R' U R U2 R'", 0), anti: macro("R U2 R' U' R U' R'", 0),
-      aperm: macro("R' F R' B2 R F' R' B2 R2", 0), ua: macro("R U' R U R U R U' R' U' R2", 0), ub: macro("R2 U R U R' U' R' U' R' U R'", 0) };
+    BM = { sexy: [], insR: [], insL: [], ycross: [], sune: [], aperm: [], uperm: [], upermB: [] };
     for (var k = 0; k < 4; k++) {
-      BM.sexy[k] = macro("R U R' U'", k);
-      BM.insR[k] = macro("U R U' R' U' F' U F", k);
-      BM.insL[k] = macro("U' L' U L U F U' F'", k);
+      BM.sexy[k] = H("R U R' U'", k);
+      BM.insR[k] = H("U R U' R' U' F' U F", k);
+      BM.insL[k] = H("U' L' U L U F U' F'", k);
+      BM.ycross[k] = H("F U R U' R' F'", k);
+      BM.sune[k] = H("R U R' U R U2 R'", k);
+      BM.aperm[k] = H("R' F R' B2 R F' R' B2 R2", k);
+      BM.uperm[k] = H("F2 U L R' F2 L' R U F2", k);
+      BM.upermB[k] = H("F2 U' L R' F2 L' R U' F2", k);
     }
+    FM = [];
+    ['U', 'D', 'L', 'R', 'F', 'B'].forEach(function (f) { ['', '2', "'"].forEach(function (m) { FM.push(macro(f + m, 0)); }); });
   }
   var FAIL = '';
-  function toks(path) { var t = []; path.forEach(function (mc) { t = t.concat(mc.toks); }); return t; }
+  var ROTN = ['', "y'", 'y2', 'y'];
+  var FACECH = 'UDLRFB';
+  /* Turns macros into what the person sees. A trigger is always shown in its textbook letters, and the guide turns
+     the whole cube (y) between triggers so that the right slot is at the front. */
+  function newEmitter() {
+    var E = { Y: 0, floor: 0, out: [], notes: [] };
+    E.push = function (t, note) {
+      var last = E.out[E.out.length - 1];
+      if (last && E.out.length > E.floor && FACECH.indexOf(last.charAt(0)) >= 0 && last.charAt(0) === t.charAt(0)) {
+        var va = last.length === 1 ? 1 : (last.charAt(1) === '2' ? 2 : 3);
+        var vb = t.length === 1 ? 1 : (t.charAt(1) === '2' ? 2 : 3);
+        var v = (va + vb) % 4;
+        E.out.pop(); E.notes.pop();
+        if (v) { E.out.push(t.charAt(0) + ['', '', '2', "'"][v]); E.notes.push(''); }
+        return;
+      }
+      E.out.push(t); E.notes.push(note || '');
+    };
+    E.frame = function (y, note) {
+      var d = (y - E.Y + 4) % 4;
+      if (!d) return;
+      E.out.push(ROTN[d]); E.notes.push(note || 'Turn the whole cube so you hold it like this for the next moves.');
+      E.Y = y;
+    };
+    E.macro = function (mc) {
+      if (mc.hold) { E.frame(mc.k); mc.base.forEach(function (t) { E.push(t); }); }
+      else if (mc.f === 'U' || mc.f === 'D') mc.toks.forEach(function (t) { E.push(t); });
+      else { E.frame(0); mc.toks.forEach(function (t) { E.push(t); }); }
+    };
+    E.abs = function (toks) { toks.forEach(function (t) { if (t.charAt(0) !== 'U' && t.charAt(0) !== 'D') E.frame(0); E.push(t); }); };
+    E.home = function () { E.frame(0, 'Turn the whole cube back so green is in front again.'); };
+    return E;
+  }
   function solveBeginnerState(cub) {
     init(); buildMacros(); buildBeginner();
-    var s = cub, stages = [], U = { isU: true, list: MC.u };
-    function push(label, t) { t = simplify(t); s = apply(s, t); stages.push({ label: label, moves: t }); }
-    var cross = solveCross(s);
-    if (!cross) return null;
-    push('cross', cross);
-    /* white corners */
-    var ct = [];
-    for (var k = 0; k < 4; k++) {
+    var s = cub, E = newEmitter(), stages = [], U = { isU: true, list: MC.u }, i0, j, k, q;
+    function endStage(label) { E.home(); stages.push({ label: label, moves: E.out.slice(i0), notes: E.notes.slice(i0) }); }
+    function runPath(path) { path.forEach(function (mc) { s = mul(s, mc.c); E.macro(mc); }); }
+    /* 1. daisy */
+    i0 = E.out.length; E.floor = i0;
+    var dsy = function (st, e) { var p = st.ep.indexOf(4 + e); return p < 4 && st.eo[p] === 0; };
+    for (var guard = 0; guard < 4; guard++) {
+      var tgt = -1;
+      for (j = 0; j < 4; j++) if (!dsy(s, j)) { tgt = j; break; }
+      if (tgt < 0) break;
+      var kept = [];
+      for (j = 0; j < 4; j++) if (j !== tgt && dsy(s, j)) kept.push(j);
+      var pd = macroSearch(s, [{ isU: false, list: FM }], function (st) { return dsy(st, tgt); }, function (st) { return kept.every(function (e) { return dsy(st, e); }); }, 6, 1500000);
+      if (!pd) { FAIL = 'daisy'; return null; }
+      runPath(pd);
+    }
+    endStage('daisy');
+    /* 2. white cross: turn the top until an edge matches its centre, then turn that face twice */
+    i0 = E.out.length; E.floor = i0;
+    var COLF = ['R', 'F', 'L', 'B'];
+    for (guard = 0; guard < 4; guard++) {
+      var best = null;
+      for (j = 0; j < 4; j++) {
+        if (s.ep[4 + j] === 4 + j && s.eo[4 + j] === 0) continue;
+        var pj = s.ep.indexOf(4 + j);
+        if (pj >= 4) { FAIL = 'cross'; return null; }
+        ['', 'U', 'U2', "U'"].forEach(function (u) {
+          var ns = u ? apply(s, [u]) : s;
+          if (ns.ep.indexOf(4 + j) === j && (!best || u.length < best.u.length)) best = { j: j, u: u };
+        });
+      }
+      if (!best) break;
+      var tk = best.u ? [best.u, COLF[best.j] + '2'] : [COLF[best.j] + '2'];
+      s = apply(s, tk); E.abs(tk);
+    }
+    if (!crossDone(s)) { FAIL = 'cross'; return null; }
+    endStage('cross');
+    /* 3. white corners with the trigger */
+    i0 = E.out.length; E.floor = i0;
+    for (k = 0; k < 4; k++) {
       if (s.cp[4 + k] === 4 + k && s.co[4 + k] === 0) continue;
       for (var g = 0; g < 4; g++) {
         var pos = s.cp.indexOf(4 + k);
         if (pos < 4) break;
-        var sx = BM.sexy[pos - 4]; s = mul(s, sx.c); ct = ct.concat(sx.toks);
+        var sx = BM.sexy[pos - 4]; s = mul(s, sx.c); E.macro(sx);
       }
       var doneC = [];
-      for (var j = 0; j < k; j++) doneC.push(j);
+      for (j = 0; j < k; j++) doneC.push(j);
       var path = macroSearch(s, [U, { isU: false, list: [BM.sexy[k]] }], function (st) { return st.cp[4 + k] === 4 + k && st.co[4 + k] === 0; },
-        function (st) { return crossDone(st) && doneC.every(function (j) { return st.cp[4 + j] === 4 + j && st.co[4 + j] === 0; }); }, 9, 300000);
+        function (st) { return crossDone(st) && doneC.every(function (jj) { return st.cp[4 + jj] === 4 + jj && st.co[4 + jj] === 0; }); }, 9, 300000);
       if (!path) { FAIL = 'corners'; return null; }
-      var pt = toks(path); s = apply(s, pt); ct = ct.concat(pt);
+      runPath(path);
     }
-    ct = simplify(ct); stages.push({ label: 'corners', moves: ct });
-    /* middle-layer edges */
-    var mt = [], allIns = [];
+    endStage('corners');
+    /* 4. middle layer */
+    i0 = E.out.length; E.floor = i0;
+    var allIns = [];
     for (k = 0; k < 4; k++) allIns.push(BM.insR[k], BM.insL[k]);
     for (k = 0; k < 4; k++) {
       if (s.ep[8 + k] === 8 + k && s.eo[8 + k] === 0) continue;
       var doneE = [];
       for (j = 0; j < k; j++) doneE.push(j);
-      var keepE = function (st) { return crossDone(st) && [0, 1, 2, 3].every(function (j) { return st.cp[4 + j] === 4 + j && st.co[4 + j] === 0; }) && doneE.every(function (j) { return st.ep[8 + j] === 8 + j && st.eo[8 + j] === 0; }); };
+      var keepE = function (st) { return crossDone(st) && [0, 1, 2, 3].every(function (jj) { return st.cp[4 + jj] === 4 + jj && st.co[4 + jj] === 0; }) && doneE.every(function (jj) { return st.ep[8 + jj] === 8 + jj && st.eo[8 + jj] === 0; }); };
       var pe = s.ep.indexOf(8 + k);
       if (pe >= 8) {
-        var kick = BM.insR[pe - 8]; var ns = mul(s, kick.c);
-        if (keepE(ns)) { s = ns; mt = mt.concat(kick.toks); }
+        var kick = BM.insR[pe - 8]; var ns2 = mul(s, kick.c);
+        if (keepE(ns2)) { s = ns2; E.macro(kick); }
       }
       var path2 = macroSearch(s, [U, { isU: false, list: allIns }], function (st) { return st.ep[8 + k] === 8 + k && st.eo[8 + k] === 0; }, keepE, 4, 300000);
       if (!path2) { FAIL = 'middle'; return null; }
-      var pt2 = toks(path2); s = apply(s, pt2); mt = mt.concat(pt2);
+      runPath(path2);
     }
-    mt = simplify(mt); stages.push({ label: 'middle', moves: mt });
-    var f2l = function (st) { return f2lDone(st, 4) && [0, 1, 2, 3].every(function (j) { return st.ep[8 + j] === 8 + j && st.eo[8 + j] === 0; }); };
-    var p3 = macroSearch(s, [U, { isU: false, list: [BM.oll] }], function (st) { for (var i = 0; i < 4; i++) if (st.eo[i]) return false; return true; }, f2l, 6, 300000);
-    if (!p3) { FAIL = 'topcross'; return null; } push('topcross', toks(p3));
+    endStage('middle');
+    var f2l = function (st) { return f2lDone(st, 4) && [0, 1, 2, 3].every(function (jj) { return st.ep[8 + jj] === 8 + jj && st.eo[8 + jj] === 0; }); };
     var topOk = function (st) { for (var i = 0; i < 4; i++) if (st.eo[i]) return false; return true; };
-    var p4 = macroSearch(s, [U, { isU: false, list: [BM.sune, BM.anti] }], function (st) { for (var i = 0; i < 4; i++) if (st.co[i]) return false; return true; }, function (st) { return f2l(st) && topOk(st); }, 6, 300000);
-    if (!p4) { FAIL = 'cornorient'; return null; } push('cornorient', toks(p4));
-    var p5 = macroSearch(s, [U, { isU: false, list: [BM.aperm] }], function (st) { for (var i = 0; i < 4; i++) if (st.cp[i] !== i) return false; return true; }, function (st) { if (!f2l(st) || !topOk(st)) return false; for (var i = 0; i < 4; i++) if (st.co[i]) return false; return true; }, 6, 300000);
-    if (!p5) { FAIL = 'cornpos'; return null; } push('cornpos', toks(p5));
-    var p6 = macroSearch(s, [U, { isU: false, list: [BM.ua, BM.ub] }], isSolved, function (st) { if (!f2l(st)) return false; for (var i = 0; i < 4; i++) if (st.co[i] || st.eo[i]) return false; return true; }, 8, 600000);
-    if (!p6) { FAIL = 'edgepos'; return null; } push('edgepos', toks(p6));
-    return { stages: stages.filter(function (g) { return g.moves.length; }), all: stages };
+    /* 5. yellow cross */
+    i0 = E.out.length; E.floor = i0;
+    var p3 = macroSearch(s, [{ isU: false, list: BM.ycross }], topOk, f2l, 4, 300000) || macroSearch(s, [U, { isU: false, list: BM.ycross }], topOk, f2l, 6, 300000);
+    if (!p3) { FAIL = 'topcross'; return null; }
+    runPath(p3); endStage('topcross');
+    /* 6. yellow face */
+    i0 = E.out.length; E.floor = i0;
+    var p4 = macroSearch(s, [U, { isU: false, list: BM.sune }], function (st) { for (var i = 0; i < 4; i++) if (st.co[i]) return false; return true; }, function (st) { return f2l(st) && topOk(st); }, 7, 600000);
+    if (!p4) { FAIL = 'cornorient'; return null; }
+    runPath(p4); endStage('cornorient');
+    /* 7. yellow corners */
+    i0 = E.out.length; E.floor = i0;
+    var p5 = macroSearch(s, [U, { isU: false, list: BM.aperm }], function (st) { for (var i = 0; i < 4; i++) if (st.cp[i] !== i) return false; return true; }, function (st) { if (!f2l(st) || !topOk(st)) return false; for (var i = 0; i < 4; i++) if (st.co[i]) return false; return true; }, 6, 600000);
+    if (!p5) { FAIL = 'cornpos'; return null; }
+    runPath(p5); endStage('cornpos');
+    /* 8. yellow edges */
+    i0 = E.out.length; E.floor = i0;
+    var p6 = macroSearch(s, [U, { isU: false, list: BM.uperm.concat(BM.upermB) }], isSolved, function (st) { if (!f2l(st)) return false; for (var i = 0; i < 4; i++) if (st.co[i] || st.eo[i]) return false; return true; }, 8, 800000);
+    if (!p6) { FAIL = 'edgepos'; return null; }
+    runPath(p6); endStage('edgepos');
+    return { stages: stages, all: stages };
   }
-  function cloneSt(st) { return st.map(function (k) { return { p: k.p.slice(), n: k.n.slice(), c: k.c }; }); }
-  function mapTok(m) { return Z2[m.charAt(0)] + m.slice(1); }
-  /* White corners, the textbook way, on a white-on-top cube. The whole cube is turned (y) so the corner's gap is
-     at the front right, then R' D' R D does every job. Returns real moves (including y turns) and a note per move. */
-  function cornersGuided(st0) {
-    var S = cloneSt(st0), moves = [], notes = [];
-    function mv(m, note) { applyMove(S, m); moves.push(m); notes.push(note || ''); }
-    function eq(a, b) { return a[0] === b[0] && a[1] === b[1] && a[2] === b[2]; }
-    function nz(p) { return (p[0] !== 0) + (p[1] !== 0) + (p[2] !== 0); }
-    function centre(c) { for (var i = 0; i < S.length; i++) if (S[i].c === c && nz(S[i].p) === 1) return S[i].n; return null; }
-    function gap(a, b) { var u = centre('U'), x = centre(a), y = centre(b); return [u[0] + x[0] + y[0], u[1] + x[1] + y[1], u[2] + x[2] + y[2]]; }
-    function find(a, b) {
-      var want = { U: 1 }; want[a] = 1; want[b] = 1;
-      var by = {};
-      S.forEach(function (k) { if (nz(k.p) === 3) (by[k.p.join(',')] = by[k.p.join(',')] || []).push(k); });
-      for (var key in by) {
-        var g = by[key];
-        if (g.every(function (k) { return want[k.c]; })) return { p: g[0].p, w: g.filter(function (k) { return k.c === 'U'; })[0] };
-      }
-      return null;
-    }
-    var YTURNS = [[], ['y'], ["y'"], ['y2']];
-    function afterY(p, t) {
-      var q = p.slice(), s2 = t.charAt(1) === "'" ? 1 : -1, n = t.charAt(1) === '2' ? 2 : 1;
-      for (var i = 0; i < n; i++) q = rot(q, 1, s2);
-      return q;
-    }
-    function spin(getPos, note) {
-      var p = getPos();
-      for (var i = 0; i < YTURNS.length; i++) {
-        var q = YTURNS[i].length ? afterY(p, YTURNS[i][0]) : p;
-        if (q[0] === 1 && q[2] === 1) { if (YTURNS[i].length) mv(YTURNS[i][0], note); return; }
-      }
-    }
-    var RUN = ['The right side moves down.', 'The bottom layer turns.', 'The right side comes back up.', 'The bottom layer turns back.'];
-    var pairs = [['F', 'R'], ['R', 'B'], ['B', 'L'], ['L', 'F']];
-    for (var pi = 0; pi < 4; pi++) {
-      var a = pairs[pi][0], b = pairs[pi][1];
-      for (var guard = 0; guard < 6; guard++) {
-        var c = find(a, b), t = gap(a, b);
-        if (eq(c.p, t) && c.w.n[1] === 1) break;
-        if (c.p[1] === 1) {
-          spin(function () { return find(a, b).p; }, 'Turn the whole cube so this corner is at the front, on the right-hand side.');
-          mv("R'", 'This corner is stuck in the top layer. The right side moves down to start pulling it out.');
-          mv("D'", 'The bottom layer turns.');
-          mv('R', 'The right side comes back up.');
-          mv('D', 'The bottom layer turns back. The corner is now in the bottom layer.');
-          continue;
-        }
-        spin(function () { return gap(a, b); }, 'Turn the whole cube so the gap for this corner is at the front, on the right-hand side.');
-        c = find(a, b);
-        var opts = ['', 'D', "D'", 'D2'], pick = null;
-        for (var oi = 0; oi < opts.length && pick === null; oi++) {
-          var q = c.p.slice();
-          if (opts[oi]) { var sg = opts[oi].charAt(1) === "'" ? -1 : 1, nn = opts[oi].charAt(1) === '2' ? 2 : 1; for (var r2 = 0; r2 < nn; r2++) q = rot(q, 1, sg); }
-          if (q[0] === 1 && q[2] === 1) pick = opts[oi];
-        }
-        if (pick) mv(pick, 'Turn the bottom layer until the corner is right below its gap, at the front on the right.');
-        for (var rep = 0; rep < 5; rep++) {
-          var tt = ["R'", "D'", 'R', 'D'];
-          for (var ti = 0; ti < 4; ti++) mv(tt[ti], (rep === 0 ? '' : 'Again. ') + RUN[ti]);
-          var cc = find(a, b);
-          if (eq(cc.p, gap(a, b)) && cc.w.n[1] === 1) { notes[notes.length - 1] = 'The corner has risen into its gap with white on top.'; break; }
-        }
-      }
-    }
-    var back = [];
-    for (var yi = 0; yi < YTURNS.length; yi++) {
-      var fc = null;
-      var nf = centre('F'); fc = nf;
-      var tn = fc;
-      if (YTURNS[yi].length) { var q2 = afterY(fc, YTURNS[yi][0]); tn = q2; }
-      if (tn[2] === 1) { back = YTURNS[yi]; break; }
-    }
-    if (back.length) mv(back[0], 'Turn the whole cube back so green is in front again.');
-    return { moves: moves, notes: notes, state: S };
-  }
-  function transformFlip(st) { return st.map(function (k) { return { p: [-k.p[0], -k.p[1], k.p[2]], n: [-k.n[0], -k.n[1], k.n[2]], c: Z2[k.c] }; }); }
   function solveBeginner(st) {
-    var cub = SV.toCubie(transformFlip(st));
+    var t = st.map(function (k) { return { p: [-k.p[0], -k.p[1], k.p[2]], n: [-k.n[0], -k.n[1], k.n[2]], c: Z2[k.c] }; });
+    var cub = SV.toCubie(t);
     if (cub.error) return { error: cub.error };
     var bad = SV.problem(cub);
     if (bad) return { error: bad };
     var r = solveBeginnerState(cub);
     if (!r) return { error: 'The beginner method could not find a route for this cube.' };
-    var crossMoves = [];
-    r.all.forEach(function (g) { if (g.label === 'cross') crossMoves = g.moves.map(mapTok); });
-    var S1 = cloneSt(st);
-    crossMoves.forEach(function (m) { applyMove(S1, m); });
-    var cg = cornersGuided(S1);
-    var cub2 = SV.toCubie(transformFlip(cg.state));
-    if (cub2.error) return { error: 'The beginner method could not find a route for this cube.' };
-    var r2 = solveBeginnerState(cub2);
-    if (!r2) return { error: 'The beginner method could not find a route for this cube.' };
-    var stages = [{ label: 'cross', top: true, moves: crossMoves, notes: [] }, { label: 'corners', top: true, moves: cg.moves, notes: cg.notes }];
-    r2.all.forEach(function (g) { if (g.label !== 'cross' && g.label !== 'corners') stages.push({ label: g.label, top: false, moves: g.moves, notes: [] }); });
     var moves = [];
-    stages.forEach(function (g) { moves = moves.concat(g.moves); });
-    return { moves: moves, stages: stages.map(function (g) { return { label: g.label, top: g.top, count: g.moves.length, moves: g.moves, notes: g.notes }; }) };
+    r.stages.forEach(function (g) { moves = moves.concat(g.moves); });
+    return { moves: moves, stages: r.stages.map(function (g) { return { label: g.label, count: g.moves.length, moves: g.moves, notes: g.notes }; }) };
   }
 
   /* st: sticker state in the usual frame (white on top). Returns { moves, stages } for the cube turned over, or { error }. */
@@ -2735,39 +2734,6 @@ var CFOP = (function () {
     setCam();
   })();
 
-  var syncDrag = function () {};
-  (function dragLook() {
-    var scene = el.cube.parentNode, d = null, was = false;
-    function allowed() { return VIEW === 'learn' && LRN.track === 'beg'; }
-    syncDrag = function () {
-      var ok = allowed();
-      scene.style.touchAction = ok ? 'none' : ''; scene.style.cursor = ok ? 'grab' : '';
-      if (!ok && was) { d = null; el.cube.style.transition = ''; goView(G.view); }
-      was = ok;
-    };
-    syncDrag();
-    scene.addEventListener('pointerdown', function (e) {
-      if (e.button || !allowed()) return;
-      d = { x: e.clientX, y: e.clientY, id: e.pointerId };
-      try { scene.setPointerCapture(e.pointerId); } catch (x) {}
-      el.cube.style.transition = 'none'; scene.style.cursor = 'grabbing';
-    });
-    scene.addEventListener('pointermove', function (e) {
-      if (!d || e.pointerId !== d.id) return;
-      cam.ry += (e.clientX - d.x) * 0.6;
-      cam.rx = Math.max(-85, Math.min(85, cam.rx - (e.clientY - d.y) * 0.6));
-      d.x = e.clientX; d.y = e.clientY;
-      setCam();
-    });
-    function end(e) {
-      if (!d || e.pointerId !== d.id) return;
-      d = null; el.cube.style.transition = ''; scene.style.cursor = 'grab';
-      var m = state.moves[G.step];
-      if (m && VIEW === 'learn') { var dd = describe(m); el.nowHint.textContent = dd.hint + (faceHidden(m) ? ' This face is on the far side, so drag the cube or tap Flip view to see it.' : ''); }
-    }
-    scene.addEventListener('pointerup', end);
-    scene.addEventListener('pointercancel', end);
-  })();
   function paintState() { return stateFromNet(paint); }
   function startState() { return VIEW === 'solver' ? (SOL.method === 'f2l' && (SOL.moves.length || SOL.solved) ? CFOP.flip(paintState()) : paintState()) : VIEW === 'learn' ? lessonStart() : solved(); }
   function recolour() {
@@ -2829,7 +2795,7 @@ var CFOP = (function () {
     });
     var N = state.moves.length;
     el.netCap.textContent = N === 0 ? 'This is the cube you painted.' : (G.step >= N ? 'After all ' + N + ' moves. Your cube should match this.' : 'After move ' + G.step + ' of ' + N + '.') +
-      ((VIEW === 'learn' && !learnTop()) || (VIEW === 'solver' && SOL.method === 'f2l' && SOL.moves.length) ? ' Here white is on the bottom and green is in front. The top square sits above front, with left, front, right and back across the middle.' : ' Hold white on top and green in front. The top square sits above front, with left, front, right and back across the middle.');
+      (VIEW === 'learn' || (VIEW === 'solver' && SOL.method === 'f2l' && SOL.moves.length) ? ' Here white is on the bottom and green is in front. The top square sits above front, with left, front, right and back across the middle.' : ' Hold white on top and green in front. The top square sits above front, with left, front, right and back across the middle.');
   }
   el.netBtn.addEventListener('click', function () {
     var open = el.netbox.hidden;
@@ -2895,7 +2861,7 @@ var CFOP = (function () {
   };
   function describe(m) {
     var f = m.charAt(0), mod = m.charAt(1);
-    if (FACES[f].all) return { text: ROT_TEXT[m] || 'Turn the whole cube.', hint: 'Drag the cube to look around it. Only turn your own cube as a whole, none of the layers move.' };
+    if (FACES[f].all) return { text: ROT_TEXT[m] || 'Turn the whole cube.', hint: 'Turn your own cube as a whole. None of the layers move.' };
     var amt = mod === '2' ? 'a half turn (180°)' : mod === "'" ? 'a quarter turn counterclockwise' : 'a quarter turn clockwise';
     var text = 'Turn the ' + FACE_NAME[f] + ' face ' + amt + '.';
     if (mod === '2') return { text: text, hint: 'Turn it the same way twice. Either direction works.' };
@@ -2932,7 +2898,7 @@ var CFOP = (function () {
       el.nowMove.textContent = m;
       el.nowMove.classList.remove('done');
       el.nowText.textContent = d.text;
-      el.nowHint.textContent = d.hint + (faceHidden(m) ? ' This face is on the far side, so drag the cube or tap Flip view to see it.' : '');
+      el.nowHint.textContent = d.hint + (faceHidden(m) ? ' This face is on the far side, so tap Flip view to see it.' : '');
       if (VIEW === 'solver' && SOL.method === 'f2l' && SOL.stages) {
         var si = stageAt(G.step);
         el.count.textContent = si.name + ' \u00b7 move ' + (si.k + 1) + ' of ' + si.n;
@@ -3035,7 +3001,7 @@ var CFOP = (function () {
     var m = state.moves[G.step];
     if (m) {
       var d = describe(m);
-      el.nowHint.textContent = d.hint + (faceHidden(m) ? ' This face is on the far side, so drag the cube or tap Flip view to see it.' : '');
+      el.nowHint.textContent = d.hint + (faceHidden(m) ? ' This face is on the far side, so tap Flip view to see it.' : '');
     }
   });
 
@@ -3765,48 +3731,48 @@ var CFOP = (function () {
       intro: 'Turn the whole cube to bring each unsolved slot to the front-right, then use the lessons. You have got this.' }
   ];
 
-  var BEG_SCRAMBLE = "D2 L' U2 L' F' U2 L2 B D2 R F2 R F2 L2 U R2 D2 U' L' D2";
+  var BEG_SCRAMBLE = "U R U' D' U2 L F2 U2 B2 U' R2 D F2 R' L' D B F U2 B";
   var LESSONS_BEG = [
-    { id: 'b-intro', title: 'Meet the beginner method', top: true, at: 'cross',
-      see: 'The beginner method solves the cube one layer at a time, using just a handful of short sequences. It takes more moves than F2L, but every step is easy to see and easy to learn.',
-      idea: 'Start with white on top and green in front, exactly as the cube here is held. You make the white cross and fill in the white corners like that. Then you turn the whole cube over, so white is on the bottom, for the middle layer and the yellow top.',
-      intro: 'This is how you start: white on top, green in front. Pick a lesson to begin.' },
-    { id: 'b-cross', stage: 'cross', top: true, title: 'White cross',
-      see: 'Make a white plus on the top face. Each white edge must also match the centre colour of the side it touches.',
-      idea: 'There is no fixed sequence here. Bring the white edges up to the top one at a time, and line up each side colour with its matching centre.',
-      done: 'The white cross is finished. Every white edge matches the centre beside it.' },
-    { id: 'b-corners', stage: 'corners', top: true, title: 'White corners',
-      see: 'Finish the white layer, one corner at a time. A white corner belongs in the gap between its two side colours.',
-      idea: 'For each corner, the guide first turns the whole cube so that corner is at the front on the right-hand side, so you always do the same moves. If the corner is in the bottom layer, turn the bottom until it sits right under its gap. Then repeat these four turns: right side down, bottom, right side up, bottom back. The corner rises into its gap with white on top, after one to five goes. If a white corner is stuck in the wrong place on top, one go of the four turns pulls it down to the bottom layer first. Drag the cube to look around it.',
-      done: 'The white layer is solved: white on top, and the side colours line up.' },
-    { id: 'b-flip', at: 'middle', top: true, title: 'Turn the cube over',
-      see: 'The rest of the method is easier with the finished white layer underneath, out of the way.',
-      idea: 'Spin the whole cube half a turn, like a steering wheel, so white is on the bottom and yellow is on top. Keep green in front. Nothing else changes.',
-      done: 'The cube is turned over: white on the bottom, yellow on top.' },
-    { id: 'b-middle', stage: 'middle', title: 'Middle layer',
-      see: 'Fill the four edges of the middle layer, the ones with no yellow on them.',
-      idea: 'Turn the top layer until the edge matches the centre in front, then use one of two mirrored sequences to slip it into the middle layer, to the right or to the left. An edge sitting in the wrong middle spot is kicked out with the same sequence.',
+    { id: 'b-intro', title: 'Meet the beginner method', at: 'daisy',
+      see: 'This is the beginner method from the official Rubik’s solve guide. You solve the cube one layer at a time, in eight steps, using a few short move patterns.',
+      idea: 'Hold the cube with the yellow centre on top and green in front, exactly as the cube here is held. You never need to turn the cube over. Press Next lesson to go through the steps, and Play to watch the moves on the cube.',
+      intro: 'Hold the cube like this: yellow on top, green in front. Pick a lesson to begin.' },
+    { id: 'b-daisy', stage: 'daisy', title: 'Step 1: The daisy',
+      see: 'Put the four white edges around the yellow centre on top, with their white tiles facing up. It looks like a daisy.',
+      idea: 'Bring each white edge up to the top layer. Turn the top layer to make room for the next one, and do not move edges you have already placed.',
+      done: 'The daisy is done: four white edges around the yellow centre.' },
+    { id: 'b-cross', stage: 'cross', title: 'Step 2: The white cross',
+      see: 'Move the white edges from the top down to the bottom, to make a white cross.',
+      idea: 'Turn the top until a white edge’s side colour matches the centre colour below it. Then turn that face twice, which sends the white edge down to the bottom. Do this for all four edges.',
+      done: 'The white cross is on the bottom. Every white edge matches the centre beside it.' },
+    { id: 'b-corners', stage: 'corners', title: 'Step 3: The white corners',
+      see: 'Fill in the four white corners on the bottom layer. Each one belongs between its two matching centre colours.',
+      idea: 'Use the right trigger: R U R′ U′. Hold the cube so the corner you are working on is at the front on the right, then repeat the trigger until the corner drops into place with white facing down. A corner in the wrong spot is pulled out with one trigger first. The guide turns the whole cube for you, so just follow the turns.',
+      done: 'The bottom layer is solved: white on the bottom, and the side colours match.' },
+    { id: 'b-middle', stage: 'middle', title: 'Step 4: The middle layer',
+      see: 'Fill the four edges of the middle layer, the edges with no yellow tile.',
+      idea: 'Turn the top until an edge’s front tile matches its centre. Then use the sequence that moves it left or right into the middle layer. If an edge is already stuck in the middle in the wrong place, use the same sequence to swap it out for a top edge.',
       done: 'The first two layers are solved. Only the yellow top is left.' },
-    { id: 'b-topcross', stage: 'topcross', title: 'Yellow cross',
-      see: 'Make a plus shape of yellow on the top. The corners do not matter yet.',
-      idea: 'Repeat Front, Right, Top, Right back, Top back, Front back, turning the top layer between goes if needed, until the yellow plus appears.',
+    { id: 'b-topcross', stage: 'topcross', title: 'Step 5: The yellow cross',
+      see: 'Make a yellow cross on top. The side colours of those edges do not need to match yet.',
+      idea: 'Repeat F U R U′ R′ F′ until the cross appears. Between goes, hold the cube so it matches the pattern you see on top.',
       done: 'The yellow cross is on top.' },
-    { id: 'b-cornorient', stage: 'cornorient', title: 'Turn the yellow corners',
-      see: 'Make the whole top face yellow. The corners may be in the wrong places, they only need to be twisted yellow side up.',
-      idea: 'Use the Sune sequence, Right, Top, Right back, Top, Right, Top twice, Right back, and repeat it until all four corners show yellow on top. Its mirror image, the anti-Sune, does the same job the other way round.',
+    { id: 'b-cornorient', stage: 'cornorient', title: 'Step 6: The yellow face',
+      see: 'Make the whole top face yellow by turning the yellow corners the right way up.',
+      idea: 'Repeat R U R′ U R U2 R′, turning the top or holding the cube to match the pattern each time, until the top is all yellow.',
       done: 'The top face is all yellow.' },
-    { id: 'b-cornpos', stage: 'cornpos', title: 'Place the corners',
-      see: 'Now move the yellow corners into their correct places. A corner is correct when its side colours match the centres below it, even if the edges between are not right yet.',
-      idea: 'Find two corners that already match and hold them at the back, then use one corner-swapping sequence. It cycles three corners and leaves the bottom two layers and the yellow face unharmed.',
-      done: 'All four corners are in the right place.' },
-    { id: 'b-edgepos', stage: 'edgepos', title: 'Place the last edges',
-      see: 'Only the four top edges are left, and they need to move around to match the centres.',
-      idea: 'Use the three-edge cycling sequence, with its mirror image if the edges need to go the other way. Check after each go, and turn the top layer to line the colours up when you are finished.',
+    { id: 'b-cornpos', stage: 'cornpos', title: 'Step 7: The yellow corners',
+      see: 'Move the yellow corners into their correct places. A corner is correct when its side colours match the centres below it.',
+      idea: 'Turn the top until two corners are in the right place, then hold the cube with them at the back and do the corner sequence. Repeat if corners are still wrong.',
+      done: 'All four yellow corners are in the right place.' },
+    { id: 'b-edgepos', stage: 'edgepos', title: 'Step 8: The yellow edges',
+      see: 'Move the last four yellow edges into place to finish the cube.',
+      idea: 'Hold the cube with a solved face at the back and repeat the edge sequence, up to three times, until every edge matches its centre.',
       done: 'The cube is solved. Well done!' },
     { id: 'b-outro', title: 'Putting it together',
       see: 'You now know the whole beginner method.',
-      idea: 'Make the white cross and the white corners with white on top. Turn the cube over, then do the middle layer, the yellow cross, twist the yellow corners, place the corners, and finally place the edges. Colour in your own cube in the Solver and switch to My cube here to practise on it. When you are ready for something faster, try the F2L track.',
-      intro: 'Seven small stages, one layer at a time. You have got this.' }
+      idea: 'Daisy, white cross, white corners, middle layer, yellow cross, yellow face, yellow corners, yellow edges. Colour in your own cube in the Solver and switch to My cube here to practise on it. When you are ready for something faster, try the F2L track.',
+      intro: 'Eight small steps, one layer at a time. You have got this.' }
   ];
   var TRACKS = { f2l: LESSONS_F2L, beg: LESSONS_BEG };
   function LS() { return TRACKS[LRN.track]; }
@@ -3822,7 +3788,7 @@ var CFOP = (function () {
     var key = (mine ? 'm' : 'e') + st.map(function (k) { return k.c; }).join('');
     if (begMemo.key === key) return begMemo.plan;
     var r = CFOP.solveBeginner(st);
-    var plan = r.error ? null : { real: st, stages: r.stages };
+    var plan = r.error ? null : { start: CFOP.flip(st), stages: r.stages };
     begMemo = { key: key, plan: plan };
     return plan;
   }
@@ -3836,24 +3802,20 @@ var CFOP = (function () {
     var l = lesson();
     var plan = begPlan();
     if (!plan) return solved();
-    var st = plan.real.map(function (k) { return { p: k.p.slice(), n: k.n.slice(), c: k.c }; });
-    var target = l.stage || l.at, flipped = false;
+    var st = plan.start.map(function (k) { return { p: k.p.slice(), n: k.n.slice(), c: k.c }; });
+    var target = l.stage || l.at;
     for (var i = 0; i < plan.stages.length; i++) {
-      var g = plan.stages[i];
-      if (g.label === target) break;
-      if (!g.top && !flipped) { applyMove(st, 'z2'); flipped = true; }
-      g.moves.forEach(function (m) { applyMove(st, m); });
+      if (plan.stages[i].label === target) break;
+      plan.stages[i].moves.forEach(function (m) { applyMove(st, m); });
     }
-    if (!flipped && !l.top) applyMove(st, 'z2');
     return st;
   }
   function begNote(l, step) {
     var g = l.stage ? begStage(l) : null;
     return g && g.notes && g.notes[step] ? g.notes[step] : '';
   }
-  function learnTop() { try { return VIEW === 'learn' && LRN.track === 'beg' && !!lesson().top; } catch (e) { return false; } }
   function lesson() { return LS()[LRN.i]; }
-  function lessonMoves() { var l = lesson(); if (l.stage) { var g = begStage(l); return g ? g.moves.slice() : []; } if (l.id === 'b-flip') return ['z2']; return l.alg ? l.alg.split(' ') : []; }
+  function lessonMoves() { var l = lesson(); if (l.stage) { var g = begStage(l); return g ? g.moves.slice() : []; } return l.alg ? l.alg.split(' ') : []; }
   var Z2 = { U: 'D', D: 'U', L: 'R', R: 'L', F: 'F', B: 'B' };
   function lessonStart() {
     if (LRN.track === 'beg') return begStart();
@@ -3900,11 +3862,11 @@ var CFOP = (function () {
       el.nowMove.classList.remove('done');
       var bn = LRN.track === 'beg' ? begNote(l, G.step) : '';
       if (mineOn()) {
-        el.nowText.textContent = (G.step === 0 && LRN.track === 'f2l' ? 'This is your cube, with white on the bottom, so turn yours over first. ' : '') + d.text + (bn ? ' ' + bn : '');
-        el.nowHint.textContent = d.hint + (faceHidden(m) ? ' This face is on the far side, so drag the cube or tap Flip view to see it.' : '');
+        el.nowText.textContent = (G.step === 0 ? (LRN.track === 'f2l' ? 'This is your cube, with white on the bottom, so turn yours over first. ' : 'This is your cube, held with yellow on top and green in front. Hold yours the same way. ') : '') + d.text + (bn ? ' ' + bn : '');
+        el.nowHint.textContent = d.hint + (faceHidden(m) ? ' This face is on the far side, so tap Flip view to see it.' : '');
       } else {
         el.nowText.textContent = d.text + (bn ? ' ' + bn : (l.why && l.why[G.step] ? ' ' + l.why[G.step] : ''));
-        el.nowHint.textContent = d.hint + (faceHidden(m) ? ' This face is on the far side, so drag the cube or tap Flip view to see it.' : '') + (l.plain || LRN.track === 'beg' ? '' : ' ' + pieceLine());
+        el.nowHint.textContent = d.hint + (faceHidden(m) ? ' This face is on the far side, so tap Flip view to see it.' : '') + (l.plain || LRN.track === 'beg' ? '' : ' ' + pieceLine());
       }
     } else if (N === 0 && l.stage) {
       el.count.textContent = '';
@@ -3917,7 +3879,7 @@ var CFOP = (function () {
       el.count.textContent = '';
       el.nowMove.textContent = '–';
       el.nowMove.classList.remove('done');
-      el.nowText.textContent = mineOn() && l.id !== 'b-outro' && l.id !== 'b-flip' ? (learnTop() ? 'This is your cube, held with white on top and green in front. Pick a lesson to see its moves on it.' : 'This is your cube, shown with white on the bottom. Pick a lesson to see its moves on it.') : l.intro;
+      el.nowText.textContent = mineOn() && l.id !== 'b-outro' ? (LRN.track === 'beg' ? 'This is your cube, held with yellow on top and green in front. Pick a lesson to see its moves on it.' : 'This is your cube, shown with white on the bottom. Pick a lesson to see its moves on it.') : l.intro;
       el.nowHint.textContent = '';
     } else {
       el.count.textContent = 'All ' + N + ' moves done';
@@ -3968,7 +3930,6 @@ var CFOP = (function () {
     lrn.prev.disabled = LRN.i === 0;
     lrn.next.disabled = LRN.i === LS().length - 1;
     lrn.next.textContent = LRN.i === 0 ? 'Start lesson 2' : 'Next lesson';
-    syncDrag();
   }
   function selectLesson(i, show) {
     if (i < 0 || i >= LS().length) return;
@@ -4034,9 +3995,8 @@ var CFOP = (function () {
     applyVisibility();
     var KEYS = 'The cube stays put and the glowing face is the one to turn. Flip view shows the far side. Keys: ← → step, P play';
     sp.gTitle.textContent = sol ? 'Solution guide' : v === 'learn' ? 'Lesson guide' : 'Move guide';
-    sp.gCap.textContent = sol ? KEYS + '. Colour keys: W Y G B R O, E erases.' : v === 'learn' ? KEYS + '. In the Beginner lessons you can also drag the cube to look all round it.' : KEYS + ', R random, Space new scramble.';
+    sp.gCap.textContent = sol ? KEYS + '. Colour keys: W Y G B R O, E erases.' : v === 'learn' ? KEYS + '.' : KEYS + ', R random, Space new scramble.';
     if (sol) { renderPaint(); pickColor(curColor); sp.out.hidden = !SOL.moves.length; }
-    syncDrag();
     if (v === 'learn') renderLearn();
     renderMoves();
     jumpTo(0);
