@@ -7,7 +7,7 @@
 <link rel="icon" type="image/png" href="icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Yellowtail&family=Josefin+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Playfair+Display:wght@700&family=Permanent+Marker&family=Special+Elite&family=Abril+Fatface&family=Rubik+Mono+One&family=Courier+Prime:wght@400;700&family=Rye&family=Fredoka:wght@400;500;600;700&family=Pinyon+Script&family=Cormorant+Garamond:wght@500;600;700&family=Caveat:wght@700&family=Cutive+Mono&family=Syncopate:wght@700&family=Outfit:wght@400;500;600;700&family=Unbounded:wght@600;700&family=DM+Mono:wght@400;500&family=Titan+One&family=Archivo:wght@400;500;600;700&family=Anton&family=IBM+Plex+Mono:wght@400;500&family=Bangers&family=Luckiest+Guy&family=Nunito:wght@400;600;700&family=Roboto+Mono:wght@400;500&family=Michroma&family=Barlow:wght@400;500;600;700&family=Chakra+Petch:wght@600;700&family=Share+Tech+Mono&family=Cinzel+Decorative:wght@700&family=Cinzel:wght@600;700&family=Raleway:wght@400;500;600;700&family=Overpass+Mono:wght@400;500&family=Uncial+Antiqua&family=Philosopher:wght@400;700&family=Alegreya+Sans:wght@400;500;700&family=Fira+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Yellowtail&family=Josefin+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Playfair+Display:wght@700&family=Permanent+Marker&family=Special+Elite&family=Abril+Fatface&family=Rubik+Mono+One&family=Courier+Prime:wght@400;700&family=Rye&family=Fredoka:wght@400;500;600;700&family=Pinyon+Script&family=Cormorant+Garamond:wght@500;600;700&family=Caveat:wght@700&family=Cutive+Mono&family=Syncopate:wght@700&family=Outfit:wght@400;500;600;700&family=Unbounded:wght@600;700&family=DM+Mono:wght@400;500&family=Titan+One&family=Archivo:wght@400;500;600;700&family=Anton&family=IBM+Plex+Mono:wght@400;500&family=Bangers&family=Luckiest+Guy&family=Nunito:wght@400;600;700&family=Roboto+Mono:wght@400;500&family=Michroma&family=Barlow:wght@400;500;600;700&family=Chakra+Petch:wght@600;700&family=Share+Tech+Mono&family=Cinzel+Decorative:wght@700&family=Cinzel:wght@600;700&family=Raleway:wght@400;500;600;700&family=Overpass+Mono:wght@400;500&family=Uncial+Antiqua&family=Philosopher:wght@400;700&family=Alegreya+Sans:wght@400;500;700&family=Fira+Mono:wght@400;500&family=Bungee&family=Bowlby+One&family=Alfa+Slab+One&display=swap" rel="stylesheet">
 <style>
 /* Layout: scramble tiles on the left (tap one to jump), a turning 3D cube with step controls on the right, previous scrambles underneath. */
 :root {
@@ -465,6 +465,86 @@ color-scheme: dark;
 color-scheme: dark;
 }
 
+/* Static Spark: electric yellow, lightning bolts and red-cheek dots */
+:root[data-skin="spark"] {
+--bg: #FFF1A8; --surface: #FFFDEE; --ink: #1D1500; --ink-2: #5E4B00; --line: #EFD148;
+--btn-bg: #1F1A0B; --btn-fg: #FFD91F; --plastic: #14110A; --focus: #D6001C;
+--accent: #8F5300; --accent-soft: #FFE46B; --tile-2: #FFD23F;
+--font-display: "Bungee", Impact, sans-serif; --font-ui: "Nunito", "Helvetica Neue", Arial, sans-serif; --font-mono: "Roboto Mono", "Courier New", monospace; --font-moves: "Bungee", Impact, sans-serif;
+--h1-style: normal; --h1-size: clamp(2.1rem, 7.8vw, 3.5rem); --h1-shadow: 3px 3px 0 var(--accent-soft);
+--r-card: 20px; --r-tile: 11px; --r-btn: 999px; --card-bw: 2.5px; --card-shadow: 0 4px 0 var(--line); --btn-edge: #E4002B;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"])[data-skin="spark"] {
+--bg: #13100A; --surface: #201B0D; --ink: #FFF6CC; --ink-2: #DCC86C; --line: #433811;
+--btn-bg: #FFD91F; --btn-fg: #1A1400; --plastic: #000000; --focus: #FFEE7A;
+--accent: #FFD91F; --accent-soft: #3A3008; --tile-2: #4A3E0A;
+color-scheme: dark;
+  }
+}
+:root[data-theme="dark"][data-skin="spark"] {
+--bg: #13100A; --surface: #201B0D; --ink: #FFF6CC; --ink-2: #DCC86C; --line: #433811;
+--btn-bg: #FFD91F; --btn-fg: #1A1400; --plastic: #000000; --focus: #FFEE7A;
+--accent: #FFD91F; --accent-soft: #3A3008; --tile-2: #4A3E0A;
+color-scheme: dark;
+}
+
+/* Lucha Libre: green, red and gold, with stars and mask diamonds */
+:root[data-skin="lucha"] {
+--bg: #F3EBD3; --surface: #FFFDF5; --ink: #0E1F14; --ink-2: #4A5B3F; --line: #D9CFA6;
+--btn-bg: #0B7A3E; --btn-fg: #FFFDF5; --plastic: #0B1A10; --focus: #D7263D;
+--accent: #0B7A3E; --accent-soft: #CDE8C4; --tile-2: #F4C9CD;
+--font-display: "Bowlby One", Impact, sans-serif; --font-ui: "Barlow", "Helvetica Neue", Arial, sans-serif; --font-mono: "Share Tech Mono", "Courier New", monospace; --font-moves: "Bowlby One", Impact, sans-serif;
+--h1-style: normal; --h1-size: clamp(2.1rem, 7.8vw, 3.5rem); --h1-shadow: 3px 3px 0 #F2C230;
+--r-card: 8px; --r-tile: 5px; --r-btn: 6px; --card-bw: 3px; --card-shadow: 0 4px 0 var(--accent); --btn-edge: #F2C230;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"])[data-skin="lucha"] {
+--bg: #0A140E; --surface: #12241A; --ink: #FFF8E6; --ink-2: #A9CDB0; --line: #24432F;
+--btn-bg: #FF5468; --btn-fg: #1A0508; --plastic: #000000; --focus: #F7D04A;
+--accent: #4BD18A; --accent-soft: #163527; --tile-2: #3B1C22;
+color-scheme: dark;
+  }
+}
+:root[data-theme="dark"][data-skin="lucha"] {
+--bg: #0A140E; --surface: #12241A; --ink: #FFF8E6; --ink-2: #A9CDB0; --line: #24432F;
+--btn-bg: #FF5468; --btn-fg: #1A0508; --plastic: #000000; --focus: #F7D04A;
+--accent: #4BD18A; --accent-soft: #163527; --tile-2: #3B1C22;
+color-scheme: dark;
+}
+
+/* Ember Wing: flame orange, deep red and a flash of blue */
+:root[data-skin="ember"] {
+--bg: #FFE9D2; --surface: #FFF8F0; --ink: #2A0E04; --ink-2: #7A3A18; --line: #F3C49A;
+--btn-bg: #C23B08; --btn-fg: #FFF8F0; --plastic: #1E0A02; --focus: #1C6DD0;
+--accent: #B93A06; --accent-soft: #FFD3A8; --tile-2: #FFC98A;
+--font-display: "Alfa Slab One", Georgia, serif; --font-ui: "Nunito", "Helvetica Neue", Arial, sans-serif; --font-mono: "Roboto Mono", "Courier New", monospace; --font-moves: "Alfa Slab One", Georgia, serif;
+--h1-style: normal; --h1-size: clamp(2rem, 7.4vw, 3.3rem); --h1-shadow: 2px 3px 0 var(--accent-soft);
+--r-card: 14px; --r-tile: 8px; --r-btn: 10px; --card-bw: 2px; --card-shadow: 0 5px 0 var(--line); --btn-edge: #FFB454;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"])[data-skin="ember"] {
+--bg: #1A0A06; --surface: #2A120A; --ink: #FFEBD6; --ink-2: #E0A87C; --line: #5A2A14;
+--btn-bg: #FF8A2B; --btn-fg: #1F0C02; --plastic: #0E0402; --focus: #6EC1FF;
+--accent: #FF8A2B; --accent-soft: #4A200E; --tile-2: #5C2A12;
+color-scheme: dark;
+  }
+}
+:root[data-theme="dark"][data-skin="ember"] {
+--bg: #1A0A06; --surface: #2A120A; --ink: #FFEBD6; --ink-2: #E0A87C; --line: #5A2A14;
+--btn-bg: #FF8A2B; --btn-fg: #1F0C02; --plastic: #0E0402; --focus: #6EC1FF;
+--accent: #FF8A2B; --accent-soft: #4A200E; --tile-2: #5C2A12;
+color-scheme: dark;
+}
+
+:root[data-skin="spark"] .moves li, :root[data-skin="lucha"] .moves li, :root[data-skin="ember"] .moves li { font-size: clamp(1.1rem, 4.2vw, 1.6rem); }
+:root[data-skin="spark"] h1, :root[data-skin="lucha"] h1, :root[data-skin="ember"] h1 { line-height: 1.15; }
+:root[data-skin="spark"] { --hl: #E4002B; }
+:root[data-skin="lucha"] { --hl: #D7263D; }
+:root[data-skin="ember"] { --hl: #1E7BE0; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"])[data-skin="spark"], :root:not([data-theme="light"])[data-skin="lucha"], :root:not([data-theme="light"])[data-skin="ember"] { --hl: var(--accent); } }
+:root[data-theme="dark"][data-skin="spark"], :root[data-theme="dark"][data-skin="lucha"], :root[data-theme="dark"][data-skin="ember"] { --hl: var(--accent); }
+
 body {
   background: radial-gradient(60rem 28rem at 88% -8%, var(--accent-soft), transparent 62%) no-repeat, var(--bg);
   color: var(--ink);
@@ -484,7 +564,7 @@ body {
 :root[data-skin="grape"] .art-grape, :root[data-skin="disco"] .art-disco,
 :root[data-skin="diary"] .art-diary, :root[data-skin="chrome"] .art-chrome,
 :root[data-skin="riot"] .art-riot, :root[data-skin="crate"] .art-crate, :root[data-skin="shore"] .art-shore,
-:root[data-skin="witch"] .art-witch, :root[data-skin="meadow"] .art-meadow { display: block; }
+:root[data-skin="witch"] .art-witch, :root[data-skin="meadow"] .art-meadow, :root[data-skin="spark"] .art-spark, :root[data-skin="lucha"] .art-lucha, :root[data-skin="ember"] .art-ember { display: block; }
 .art-svg, .ht svg { position: absolute; inset: 0; width: 100%; height: 100%; }
 .art-disco .rays { position: absolute; inset: 0; background: repeating-conic-gradient(from 0deg at 50% -8%, color-mix(in srgb, var(--btn-bg) 24%, transparent) 0 6deg, transparent 6deg 12deg); -webkit-mask-image: linear-gradient(#000, transparent 80%); mask-image: linear-gradient(#000, transparent 80%); }
 .discoball { position: absolute; top: -8px; right: max(4%, 16px); width: clamp(60px, 14vw, 130px); height: auto; opacity: 0.55; }
@@ -495,7 +575,7 @@ body {
 h1 { margin: 0; font-family: var(--font-display); font-style: var(--h1-style); font-weight: 400; font-size: var(--h1-size); line-height: 1.1; letter-spacing: 0; color: var(--accent); text-shadow: var(--h1-shadow); text-wrap: balance; }
 .brand { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; }
 .deco { display: none; width: clamp(46px, 11vw, 64px); height: auto; color: var(--accent); flex: none; }
-:root:not([data-skin]) .deco.cherry, :root[data-skin="cherry"] .deco.cherry, :root[data-skin="grape"] .deco.grape, :root[data-skin="disco"] .deco.disco, :root[data-skin="diary"] .deco.diary, :root[data-skin="chrome"] .deco.chrome, :root[data-skin="riot"] .deco.riot, :root[data-skin="crate"] .deco.crate, :root[data-skin="shore"] .deco.shore, :root[data-skin="witch"] .deco.witch, :root[data-skin="meadow"] .deco.meadow { display: block; }
+:root:not([data-skin]) .deco.cherry, :root[data-skin="cherry"] .deco.cherry, :root[data-skin="grape"] .deco.grape, :root[data-skin="disco"] .deco.disco, :root[data-skin="diary"] .deco.diary, :root[data-skin="chrome"] .deco.chrome, :root[data-skin="riot"] .deco.riot, :root[data-skin="crate"] .deco.crate, :root[data-skin="shore"] .deco.shore, :root[data-skin="witch"] .deco.witch, :root[data-skin="meadow"] .deco.meadow, :root[data-skin="spark"] .deco.spark, :root[data-skin="lucha"] .deco.lucha, :root[data-skin="ember"] .deco.ember { display: block; }
 .spark { width: 16px; height: 16px; color: var(--accent); flex: none; align-self: flex-start; }
 .spark.big { width: 24px; height: 24px; }
 .sub { margin: 6px 0 0; color: var(--ink-2); max-width: 46ch; }
@@ -1290,6 +1370,63 @@ try {
     </svg>
   </div>
 
+  <!-- Static Spark: lightning bolts and red-cheek dots on electric yellow -->
+  <div class="art art-spark">
+    <svg class="art-svg" width="100%" height="100%">
+      <defs>
+        <path id="sp-bolt" d="M14 0 L2 18 H11 L8 32 L22 12 H13 Z" fill="var(--accent)"/>
+        <pattern id="sp-pt" width="190" height="190" patternUnits="userSpaceOnUse">
+          <use href="#sp-bolt" transform="translate(18 20) scale(1.5) rotate(-8)" opacity=".2"/>
+          <use href="#sp-bolt" transform="translate(120 104) scale(1.1) rotate(10)" opacity=".16"/>
+          <circle cx="112" cy="30" r="9" fill="var(--hl)" opacity=".2"/>
+          <circle cx="40" cy="132" r="9" fill="var(--hl)" opacity=".2"/>
+          <circle cx="160" cy="168" r="3" fill="var(--accent)" opacity=".3"/>
+          <circle cx="78" cy="82" r="3" fill="var(--accent)" opacity=".3"/>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#sp-pt)"/>
+    </svg>
+  </div>
+
+  <!-- Lucha Libre: stars and mask diamonds in green, red and gold -->
+  <div class="art art-lucha">
+    <svg class="art-svg" width="100%" height="100%">
+      <defs>
+        <path id="lu-star" d="M12 1 L14.9 8.6 L23 9 L16.7 14.1 L18.9 22 L12 17.6 L5.1 22 L7.3 14.1 L1 9 L9.1 8.6Z" fill="var(--accent)"/>
+        <pattern id="lu-pt" width="130" height="130" patternUnits="userSpaceOnUse">
+          <path d="M65 6 L124 65 L65 124 L6 65Z" fill="none" stroke="var(--hl)" stroke-width="2" opacity=".2"/>
+          <path d="M65 30 L100 65 L65 100 L30 65Z" fill="none" stroke="var(--accent)" stroke-width="1.5" opacity=".22"/>
+          <use href="#lu-star" transform="translate(47 47) scale(1.5)" opacity=".26"/>
+          <use href="#lu-star" transform="translate(-6 -6) scale(.6)" opacity=".28"/>
+          <use href="#lu-star" transform="translate(122 -6) scale(.6)" opacity=".28"/>
+          <use href="#lu-star" transform="translate(-6 122) scale(.6)" opacity=".28"/>
+          <use href="#lu-star" transform="translate(122 122) scale(.6)" opacity=".28"/>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#lu-pt)"/>
+    </svg>
+  </div>
+
+  <!-- Ember Wing: drifting flames and embers -->
+  <div class="art art-ember">
+    <svg class="art-svg" width="100%" height="100%">
+      <defs>
+        <path id="em-fl" d="M12 0 C13 9 22 12 22 21 C22 28 17 32 12 32 C7 32 2 28 2 21 C2 16 5 13 7 10 C8 13 9 14 10 14 C9 9 10 4 12 0Z" fill="var(--accent)"/>
+        <path id="em-in" d="M12 14 C12 19 17 21 17 25 C17 29 14 31 12 31 C10 31 7 29 7 25 C7 22 10 20 12 14Z" fill="var(--hl)"/>
+        <pattern id="em-pt" width="220" height="240" patternUnits="userSpaceOnUse">
+          <use href="#em-fl" transform="translate(30 30) scale(1.6)" opacity=".2"/>
+          <use href="#em-in" transform="translate(30 30) scale(1.6)" opacity=".14"/>
+          <use href="#em-fl" transform="translate(140 140) scale(1.1) rotate(8 12 16)" opacity=".16"/>
+          <circle cx="120" cy="40" r="3" fill="var(--accent)" opacity=".35"/>
+          <circle cx="80" cy="150" r="2.5" fill="var(--accent)" opacity=".3"/>
+          <circle cx="190" cy="60" r="2" fill="var(--hl)" opacity=".3"/>
+          <circle cx="40" cy="200" r="2" fill="var(--hl)" opacity=".3"/>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#em-pt)"/>
+    </svg>
+  </div>
+
   <!-- Meadow Quest: swirly clouds, rolling green hills and gold sparkles -->
   <div class="art art-meadow">
     <svg class="art-svg" width="100%" height="100%">
@@ -1390,6 +1527,21 @@ try {
         <path d="M8 15 L16 13 M48 13 L56 15" stroke="var(--bg)" stroke-width="1.8" stroke-linecap="round" opacity=".6"/>
         <path d="M32 31 L33.6 36.4 L39 38 L33.6 39.6 L32 45 L30.4 39.6 L25 38 L30.4 36.4Z" fill="currentColor" transform="translate(0 -3)"/>
       </svg>
+      <svg class="deco spark" viewBox="0 0 64 44" aria-hidden="true">
+        <path d="M38 1 L18 24 H29 L24 43 L47 17 H35 Z" fill="currentColor"/>
+        <circle cx="8" cy="30" r="5" fill="var(--hl)" opacity=".85"/>
+        <circle cx="56" cy="14" r="3" fill="currentColor" opacity=".6"/>
+      </svg>
+      <svg class="deco lucha" viewBox="0 0 64 44" aria-hidden="true">
+        <path d="M32 2 C17 2 8 12 8 24 C8 35 18 42 32 42 C46 42 56 35 56 24 C56 12 47 2 32 2Z" fill="currentColor"/>
+        <path d="M14 21 C16 15 24 15 28 21 C26 26 18 27 14 21Z M50 21 C48 15 40 15 36 21 C38 26 46 27 50 21Z" fill="var(--bg)"/>
+        <path d="M32 3 L36 10 L32 17 L28 10Z" fill="var(--hl)"/>
+        <path d="M24 33 Q32 38 40 33" fill="none" stroke="var(--bg)" stroke-width="2.4" stroke-linecap="round"/>
+      </svg>
+      <svg class="deco ember" viewBox="0 0 64 44" aria-hidden="true">
+        <path d="M32 1 C34 14 50 18 50 31 C50 39 42 43 32 43 C22 43 14 39 14 31 C14 24 19 20 22 15 C24 20 26 21 28 21 C26 13 28 7 32 1Z" fill="currentColor"/>
+        <path d="M32 21 C32 28 41 30 41 35 C41 40 36 42 32 42 C28 42 23 40 23 35 C23 31 29 29 32 21Z" fill="var(--hl)" opacity=".9"/>
+      </svg>
       <svg class="deco meadow" viewBox="0 0 64 44" aria-hidden="true">
         <path d="M0 38 C12 26 26 28 34 35 C42 28 54 25 64 34 V44 H0Z" fill="currentColor" opacity=".5"/>
         <path d="M32 38 V21" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" fill="none"/>
@@ -1422,6 +1574,9 @@ try {
           <li role="option" class="opt" id="opt-shore" data-skin="shore" aria-selected="false" style="--s1:#0F4C5A;--s2:#9FB4BC;--s3:#0A1013"><span class="sw"></span>Lonely Shore</li>
           <li role="option" class="opt" id="opt-witch" data-skin="witch" aria-selected="false" style="--s1:#A3123A;--s2:#D4A93C;--s3:#15040C"><span class="sw"></span>Noir Witch</li>
           <li role="option" class="opt" id="opt-meadow" data-skin="meadow" aria-selected="false" style="--s1:#2F7A46;--s2:#E3C25A;--s3:#DCEBC8"><span class="sw"></span>Meadow Quest</li>
+          <li role="option" class="opt" id="opt-spark" data-skin="spark" aria-selected="false" style="--s1:#FFD91F;--s2:#E4002B;--s3:#1F1A0B"><span class="sw"></span>Static Spark</li>
+          <li role="option" class="opt" id="opt-lucha" data-skin="lucha" aria-selected="false" style="--s1:#0B7A3E;--s2:#D7263D;--s3:#F2C230"><span class="sw"></span>Lucha Libre</li>
+          <li role="option" class="opt" id="opt-ember" data-skin="ember" aria-selected="false" style="--s1:#E8590C;--s2:#1E7BE0;--s3:#2A0E04"><span class="sw"></span>Ember Wing</li>
         </ul>
       </div>
     </div>
@@ -3189,7 +3344,10 @@ var CFOP = (function () {
     crate: 'Smash the scramble, spin it back.',
     shore: 'Every scramble is a long walk. Finish it.',
     witch: 'Twist it, tame it, finish with style.',
-    meadow: 'A scrambled cube is an adventure. Set out and solve it.'
+    meadow: 'A scrambled cube is an adventure. Set out and solve it.',
+    spark: 'Charge it up, shock the scramble, solve it fast.',
+    lucha: 'Mask on. Twist it, flip it, win the match.',
+    ember: 'Fan the flames, then burn through the solve.'
   };
   var opts = [].slice.call(document.querySelectorAll('.opt'));
   var dd = {
