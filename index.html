@@ -1637,7 +1637,8 @@ try {
 
 <script>
 /*ENGINE*/
-var FACES = { U: { a: 1, l: 1 }, D: { a: 1, l: -1 }, R: { a: 0, l: 1 }, L: { a: 0, l: -1 }, F: { a: 2, l: 1 }, B: { a: 2, l: -1 } };
+var FACES = { U: { a: 1, l: 1 }, D: { a: 1, l: -1 }, R: { a: 0, l: 1 }, L: { a: 0, l: -1 }, F: { a: 2, l: 1 }, B: { a: 2, l: -1 },
+  x: { a: 0, l: 1, all: true }, y: { a: 1, l: 1, all: true }, z: { a: 2, l: 1, all: true } };
 var NAMES = ['U', 'D', 'L', 'R', 'F', 'B'];
 
 function rot(v, a, s) {
@@ -1675,7 +1676,7 @@ function applyMove(st, move) {
   var s = f.l > 0 ? -1 : 1;
   if (mod === "'") s = -s;
   st.forEach(function (k) {
-    if (k.p[f.a] !== f.l) return;
+    if (!f.all && k.p[f.a] !== f.l) return;
     for (var i = 0; i < turns; i++) {
       k.p = rot(k.p, f.a, s);
       k.n = rot(k.n, f.a, s);
@@ -2378,17 +2379,105 @@ var CFOP = (function () {
     if (!p6) { FAIL = 'edgepos'; return null; } push('edgepos', toks(p6));
     return { stages: stages.filter(function (g) { return g.moves.length; }), all: stages };
   }
+  function cloneSt(st) { return st.map(function (k) { return { p: k.p.slice(), n: k.n.slice(), c: k.c }; }); }
+  function mapTok(m) { return Z2[m.charAt(0)] + m.slice(1); }
+  /* White corners, the textbook way, on a white-on-top cube. The whole cube is turned (y) so the corner's gap is
+     at the front right, then R' D' R D does every job. Returns real moves (including y turns) and a note per move. */
+  function cornersGuided(st0) {
+    var S = cloneSt(st0), moves = [], notes = [];
+    function mv(m, note) { applyMove(S, m); moves.push(m); notes.push(note || ''); }
+    function eq(a, b) { return a[0] === b[0] && a[1] === b[1] && a[2] === b[2]; }
+    function nz(p) { return (p[0] !== 0) + (p[1] !== 0) + (p[2] !== 0); }
+    function centre(c) { for (var i = 0; i < S.length; i++) if (S[i].c === c && nz(S[i].p) === 1) return S[i].n; return null; }
+    function gap(a, b) { var u = centre('U'), x = centre(a), y = centre(b); return [u[0] + x[0] + y[0], u[1] + x[1] + y[1], u[2] + x[2] + y[2]]; }
+    function find(a, b) {
+      var want = { U: 1 }; want[a] = 1; want[b] = 1;
+      var by = {};
+      S.forEach(function (k) { if (nz(k.p) === 3) (by[k.p.join(',')] = by[k.p.join(',')] || []).push(k); });
+      for (var key in by) {
+        var g = by[key];
+        if (g.every(function (k) { return want[k.c]; })) return { p: g[0].p, w: g.filter(function (k) { return k.c === 'U'; })[0] };
+      }
+      return null;
+    }
+    var YTURNS = [[], ['y'], ["y'"], ['y2']];
+    function afterY(p, t) {
+      var q = p.slice(), s2 = t.charAt(1) === "'" ? 1 : -1, n = t.charAt(1) === '2' ? 2 : 1;
+      for (var i = 0; i < n; i++) q = rot(q, 1, s2);
+      return q;
+    }
+    function spin(getPos, note) {
+      var p = getPos();
+      for (var i = 0; i < YTURNS.length; i++) {
+        var q = YTURNS[i].length ? afterY(p, YTURNS[i][0]) : p;
+        if (q[0] === 1 && q[2] === 1) { if (YTURNS[i].length) mv(YTURNS[i][0], note); return; }
+      }
+    }
+    var RUN = ['The right side moves down.', 'The bottom layer turns.', 'The right side comes back up.', 'The bottom layer turns back.'];
+    var pairs = [['F', 'R'], ['R', 'B'], ['B', 'L'], ['L', 'F']];
+    for (var pi = 0; pi < 4; pi++) {
+      var a = pairs[pi][0], b = pairs[pi][1];
+      for (var guard = 0; guard < 6; guard++) {
+        var c = find(a, b), t = gap(a, b);
+        if (eq(c.p, t) && c.w.n[1] === 1) break;
+        if (c.p[1] === 1) {
+          spin(function () { return find(a, b).p; }, 'Turn the whole cube so this corner is at the front, on the right-hand side.');
+          mv("R'", 'This corner is stuck in the top layer. The right side moves down to start pulling it out.');
+          mv("D'", 'The bottom layer turns.');
+          mv('R', 'The right side comes back up.');
+          mv('D', 'The bottom layer turns back. The corner is now in the bottom layer.');
+          continue;
+        }
+        spin(function () { return gap(a, b); }, 'Turn the whole cube so the gap for this corner is at the front, on the right-hand side.');
+        c = find(a, b);
+        var opts = ['', 'D', "D'", 'D2'], pick = null;
+        for (var oi = 0; oi < opts.length && pick === null; oi++) {
+          var q = c.p.slice();
+          if (opts[oi]) { var sg = opts[oi].charAt(1) === "'" ? -1 : 1, nn = opts[oi].charAt(1) === '2' ? 2 : 1; for (var r2 = 0; r2 < nn; r2++) q = rot(q, 1, sg); }
+          if (q[0] === 1 && q[2] === 1) pick = opts[oi];
+        }
+        if (pick) mv(pick, 'Turn the bottom layer until the corner is right below its gap, at the front on the right.');
+        for (var rep = 0; rep < 5; rep++) {
+          var tt = ["R'", "D'", 'R', 'D'];
+          for (var ti = 0; ti < 4; ti++) mv(tt[ti], (rep === 0 ? '' : 'Again. ') + RUN[ti]);
+          var cc = find(a, b);
+          if (eq(cc.p, gap(a, b)) && cc.w.n[1] === 1) { notes[notes.length - 1] = 'The corner has risen into its gap with white on top.'; break; }
+        }
+      }
+    }
+    var back = [];
+    for (var yi = 0; yi < YTURNS.length; yi++) {
+      var fc = null;
+      var nf = centre('F'); fc = nf;
+      var tn = fc;
+      if (YTURNS[yi].length) { var q2 = afterY(fc, YTURNS[yi][0]); tn = q2; }
+      if (tn[2] === 1) { back = YTURNS[yi]; break; }
+    }
+    if (back.length) mv(back[0], 'Turn the whole cube back so green is in front again.');
+    return { moves: moves, notes: notes, state: S };
+  }
+  function transformFlip(st) { return st.map(function (k) { return { p: [-k.p[0], -k.p[1], k.p[2]], n: [-k.n[0], -k.n[1], k.n[2]], c: Z2[k.c] }; }); }
   function solveBeginner(st) {
-    var t = st.map(function (k) { return { p: [-k.p[0], -k.p[1], k.p[2]], n: [-k.n[0], -k.n[1], k.n[2]], c: Z2[k.c] }; });
-    var cub = SV.toCubie(t);
+    var cub = SV.toCubie(transformFlip(st));
     if (cub.error) return { error: cub.error };
     var bad = SV.problem(cub);
     if (bad) return { error: bad };
     var r = solveBeginnerState(cub);
     if (!r) return { error: 'The beginner method could not find a route for this cube.' };
+    var crossMoves = [];
+    r.all.forEach(function (g) { if (g.label === 'cross') crossMoves = g.moves.map(mapTok); });
+    var S1 = cloneSt(st);
+    crossMoves.forEach(function (m) { applyMove(S1, m); });
+    var cg = cornersGuided(S1);
+    var cub2 = SV.toCubie(transformFlip(cg.state));
+    if (cub2.error) return { error: 'The beginner method could not find a route for this cube.' };
+    var r2 = solveBeginnerState(cub2);
+    if (!r2) return { error: 'The beginner method could not find a route for this cube.' };
+    var stages = [{ label: 'cross', top: true, moves: crossMoves, notes: [] }, { label: 'corners', top: true, moves: cg.moves, notes: cg.notes }];
+    r2.all.forEach(function (g) { if (g.label !== 'cross' && g.label !== 'corners') stages.push({ label: g.label, top: false, moves: g.moves, notes: [] }); });
     var moves = [];
-    r.stages.forEach(function (g) { moves = moves.concat(g.moves); });
-    return { moves: moves, stages: r.all.map(function (g) { return { label: g.label, count: g.moves.length, moves: g.moves }; }) };
+    stages.forEach(function (g) { moves = moves.concat(g.moves); });
+    return { moves: moves, stages: stages.map(function (g) { return { label: g.label, top: g.top, count: g.moves.length, moves: g.moves, notes: g.notes }; }) };
   }
 
   /* st: sticker state in the usual frame (white on top). Returns { moves, stages } for the cube turned over, or { error }. */
@@ -2646,6 +2735,31 @@ var CFOP = (function () {
     setCam();
   })();
 
+  (function dragLook() {
+    var scene = el.cube.parentNode, d = null;
+    scene.style.touchAction = 'none'; scene.style.cursor = 'grab';
+    scene.addEventListener('pointerdown', function (e) {
+      if (e.button) return;
+      d = { x: e.clientX, y: e.clientY, id: e.pointerId };
+      try { scene.setPointerCapture(e.pointerId); } catch (x) {}
+      el.cube.style.transition = 'none'; scene.style.cursor = 'grabbing';
+    });
+    scene.addEventListener('pointermove', function (e) {
+      if (!d || e.pointerId !== d.id) return;
+      cam.ry += (e.clientX - d.x) * 0.6;
+      cam.rx = Math.max(-85, Math.min(85, cam.rx - (e.clientY - d.y) * 0.6));
+      d.x = e.clientX; d.y = e.clientY;
+      setCam();
+    });
+    function end(e) {
+      if (!d || e.pointerId !== d.id) return;
+      d = null; el.cube.style.transition = ''; scene.style.cursor = 'grab';
+      var m = state.moves[G.step];
+      if (m && VIEW === 'learn') { var dd = describe(m); el.nowHint.textContent = dd.hint + (faceHidden(m) ? ' This face is on the far side, so drag the cube or tap Flip view to see it.' : ''); }
+    }
+    scene.addEventListener('pointerup', end);
+    scene.addEventListener('pointercancel', end);
+  })();
   function paintState() { return stateFromNet(paint); }
   function startState() { return VIEW === 'solver' ? (SOL.method === 'f2l' && (SOL.moves.length || SOL.solved) ? CFOP.flip(paintState()) : paintState()) : VIEW === 'learn' ? lessonStart() : solved(); }
   function recolour() {
@@ -2658,7 +2772,7 @@ var CFOP = (function () {
   }
   function setHighlight(move) {
     var nrm = null;
-    if (move) {
+    if (move && !FACES[move.charAt(0)].all) {
       var f = FACES[move.charAt(0)];
       nrm = [0, 0, 0];
       nrm[f.a] = f.l;
@@ -2677,6 +2791,7 @@ var CFOP = (function () {
   }
   function faceHidden(move) {
     var f = FACES[move.charAt(0)];
+    if (f.all) return false;
     var nm = [0, 0, 0];
     nm[f.a] = f.l;
     return zOf(nm, cam.rx, cam.ry) <= 0.3;
@@ -2733,10 +2848,10 @@ var CFOP = (function () {
     el.cube.appendChild(group);
     var moving = [];
     stickEls.forEach(function (d, i) {
-      if (cstate[i].p[f.a] === f.l) { group.appendChild(d); moving.push(d); }
+      if (f.all || cstate[i].p[f.a] === f.l) { group.appendChild(d); moving.push(d); }
     });
     plates.forEach(function (o) {
-      if (o.p[f.a] === f.l) { group.appendChild(o.el); moving.push(o.el); }
+      if (f.all || o.p[f.a] === f.l) { group.appendChild(o.el); moving.push(o.el); }
     });
     G.cleanup = function () {
       moving.forEach(function (d) { el.cube.appendChild(d); });
@@ -2762,8 +2877,17 @@ var CFOP = (function () {
   var FACE_NAME = { U: 'top', D: 'bottom', R: 'right', L: 'left', F: 'front', B: 'back' };
   var INV = { left: 'right', right: 'left', up: 'down', down: 'up' };
   var BASE = { U: ['side', 'left'], D: ['side', 'right'], R: ['side', 'up'], L: ['side', 'down'], F: ['edge', 'right'], B: ['edge', 'left'] };
+  var ROT_TEXT = {
+    y: 'Turn the whole cube a quarter turn to the left, as if you were turning it on a plate. The right face comes round to the front.',
+    "y'": 'Turn the whole cube a quarter turn to the right, as if you were turning it on a plate. The left face comes round to the front.',
+    y2: 'Turn the whole cube half a turn on a plate, so the back comes round to the front.',
+    z2: 'Spin the whole cube half a turn like a steering wheel, so what was on top is now on the bottom. Green stays in front.',
+    x: 'Roll the whole cube towards you, so the front face goes to the bottom.', "x'": 'Roll the whole cube away from you, so the front face goes to the top.', x2: 'Roll the whole cube over twice, so the top is on the bottom and the back is at the front.',
+    z: 'Tilt the whole cube to the right, like turning a steering wheel clockwise.', "z'": 'Tilt the whole cube to the left, like turning a steering wheel counterclockwise.'
+  };
   function describe(m) {
     var f = m.charAt(0), mod = m.charAt(1);
+    if (FACES[f].all) return { text: ROT_TEXT[m] || 'Turn the whole cube.', hint: 'Drag the cube to look around it. Only turn your own cube as a whole, none of the layers move.' };
     var amt = mod === '2' ? 'a half turn (180°)' : mod === "'" ? 'a quarter turn counterclockwise' : 'a quarter turn clockwise';
     var text = 'Turn the ' + FACE_NAME[f] + ' face ' + amt + '.';
     if (mod === '2') return { text: text, hint: 'Turn it the same way twice. Either direction works.' };
@@ -2800,7 +2924,7 @@ var CFOP = (function () {
       el.nowMove.textContent = m;
       el.nowMove.classList.remove('done');
       el.nowText.textContent = d.text;
-      el.nowHint.textContent = d.hint + (faceHidden(m) ? ' This face is on the far side, so tap Flip view to see it.' : '');
+      el.nowHint.textContent = d.hint + (faceHidden(m) ? ' This face is on the far side, so drag the cube or tap Flip view to see it.' : '');
       if (VIEW === 'solver' && SOL.method === 'f2l' && SOL.stages) {
         var si = stageAt(G.step);
         el.count.textContent = si.name + ' \u00b7 move ' + (si.k + 1) + ' of ' + si.n;
@@ -2903,7 +3027,7 @@ var CFOP = (function () {
     var m = state.moves[G.step];
     if (m) {
       var d = describe(m);
-      el.nowHint.textContent = d.hint + (faceHidden(m) ? ' This face is on the far side, so tap Flip view to see it.' : '');
+      el.nowHint.textContent = d.hint + (faceHidden(m) ? ' This face is on the far side, so drag the cube or tap Flip view to see it.' : '');
     }
   });
 
@@ -3633,7 +3757,7 @@ var CFOP = (function () {
       intro: 'Turn the whole cube to bring each unsolved slot to the front-right, then use the lessons. You have got this.' }
   ];
 
-  var BEG_SCRAMBLE = "R U2 F' L D B2 R' U F2 L' D2 R B' U' F L2 D R2 U' B";
+  var BEG_SCRAMBLE = "D2 L' U2 L' F' U2 L2 B D2 R F2 R F2 L2 U R2 D2 U' L' D2";
   var LESSONS_BEG = [
     { id: 'b-intro', title: 'Meet the beginner method', top: true, at: 'cross',
       see: 'The beginner method solves the cube one layer at a time, using just a handful of short sequences. It takes more moves than F2L, but every step is easy to see and easy to learn.',
@@ -3644,13 +3768,13 @@ var CFOP = (function () {
       idea: 'There is no fixed sequence here. Bring the white edges up to the top one at a time, and line up each side colour with its matching centre.',
       done: 'The white cross is finished. Every white edge matches the centre beside it.' },
     { id: 'b-corners', stage: 'corners', top: true, title: 'White corners',
-      see: 'Finish the white layer. Each white corner belongs in the gap between its two side colours.',
-      idea: 'Do one corner at a time. Find a white corner that is not home yet. Turn the bottom layer until it sits right under the gap where it belongs, which is the gap between its two side colours. Then do a short four-move pattern over and over: one side face turns, the bottom turns, the side face turns back, the bottom turns back. After one to five goes the corner rises into the gap with white on top. If a white corner is stuck in the wrong gap, the same pattern pulls it down to the bottom layer first. The guide shows the exact moves for each corner, so just follow it.',
+      see: 'Finish the white layer, one corner at a time. A white corner belongs in the gap between its two side colours.',
+      idea: 'For each corner, the guide first turns the whole cube so that corner is at the front on the right-hand side, so you always do the same moves. If the corner is in the bottom layer, turn the bottom until it sits right under its gap. Then repeat these four turns: right side down, bottom, right side up, bottom back. The corner rises into its gap with white on top, after one to five goes. If a white corner is stuck in the wrong place on top, one go of the four turns pulls it down to the bottom layer first. Drag the cube to look around it.',
       done: 'The white layer is solved: white on top, and the side colours line up.' },
-    { id: 'b-flip', at: 'middle', title: 'Turn the cube over',
+    { id: 'b-flip', at: 'middle', top: true, title: 'Turn the cube over',
       see: 'The rest of the method is easier with the finished white layer underneath, out of the way.',
-      idea: 'Spin the whole cube half a turn, like a steering wheel, so white is on the bottom and yellow is on top. Keep green in front. Nothing else changes. The cube here shows how yours should look afterwards.',
-      intro: 'Spin the whole cube half a turn so white is on the bottom and yellow is on top. Green stays in front.' },
+      idea: 'Spin the whole cube half a turn, like a steering wheel, so white is on the bottom and yellow is on top. Keep green in front. Nothing else changes.',
+      done: 'The cube is turned over: white on the bottom, yellow on top.' },
     { id: 'b-middle', stage: 'middle', title: 'Middle layer',
       see: 'Fill the four edges of the middle layer, the ones with no yellow on them.',
       idea: 'Turn the top layer until the edge matches the centre in front, then use one of two mirrored sequences to slip it into the middle layer, to the right or to the left. An edge sitting in the wrong middle spot is kicked out with the same sequence.',
@@ -3690,7 +3814,7 @@ var CFOP = (function () {
     var key = (mine ? 'm' : 'e') + st.map(function (k) { return k.c; }).join('');
     if (begMemo.key === key) return begMemo.plan;
     var r = CFOP.solveBeginner(st);
-    var plan = r.error ? null : { real: st, start: CFOP.flip(st), stages: r.stages };
+    var plan = r.error ? null : { real: st, stages: r.stages };
     begMemo = { key: key, plan: plan };
     return plan;
   }
@@ -3700,23 +3824,28 @@ var CFOP = (function () {
     for (var i = 0; i < plan.stages.length; i++) if (plan.stages[i].label === l.stage) return plan.stages[i];
     return null;
   }
-  function mapTok(m) { return Z2[m.charAt(0)] + m.slice(1); }
   function begStart() {
     var l = lesson();
     var plan = begPlan();
     if (!plan) return solved();
-    var base = l.top ? plan.real : plan.start;
-    var st = base.map(function (k) { return { p: k.p.slice(), n: k.n.slice(), c: k.c }; });
-    var target = l.stage || l.at;
+    var st = plan.real.map(function (k) { return { p: k.p.slice(), n: k.n.slice(), c: k.c }; });
+    var target = l.stage || l.at, flipped = false;
     for (var i = 0; i < plan.stages.length; i++) {
-      if (plan.stages[i].label === target) break;
-      plan.stages[i].moves.forEach(function (m) { applyMove(st, l.top ? mapTok(m) : m); });
+      var g = plan.stages[i];
+      if (g.label === target) break;
+      if (!g.top && !flipped) { applyMove(st, 'z2'); flipped = true; }
+      g.moves.forEach(function (m) { applyMove(st, m); });
     }
+    if (!flipped && !l.top) applyMove(st, 'z2');
     return st;
+  }
+  function begNote(l, step) {
+    var g = l.stage ? begStage(l) : null;
+    return g && g.notes && g.notes[step] ? g.notes[step] : '';
   }
   function learnTop() { try { return VIEW === 'learn' && LRN.track === 'beg' && !!lesson().top; } catch (e) { return false; } }
   function lesson() { return LS()[LRN.i]; }
-  function lessonMoves() { var l = lesson(); if (l.stage) { var g = begStage(l); return g ? g.moves.map(function (m) { return l.top ? mapTok(m) : m; }) : []; } return l.alg ? l.alg.split(' ') : []; }
+  function lessonMoves() { var l = lesson(); if (l.stage) { var g = begStage(l); return g ? g.moves.slice() : []; } if (l.id === 'b-flip') return ['z2']; return l.alg ? l.alg.split(' ') : []; }
   var Z2 = { U: 'D', D: 'U', L: 'R', R: 'L', F: 'F', B: 'B' };
   function lessonStart() {
     if (LRN.track === 'beg') return begStart();
@@ -3761,12 +3890,13 @@ var CFOP = (function () {
       el.count.textContent = 'Move ' + (G.step + 1) + ' of ' + N;
       el.nowMove.textContent = m;
       el.nowMove.classList.remove('done');
+      var bn = LRN.track === 'beg' ? begNote(l, G.step) : '';
       if (mineOn()) {
-        el.nowText.textContent = (G.step === 0 && !learnTop() ? 'This is your cube, with white on the bottom, so turn yours over first. ' : '') + d.text;
-        el.nowHint.textContent = d.hint + (faceHidden(m) ? ' This face is on the far side, so tap Flip view to see it.' : '');
+        el.nowText.textContent = (G.step === 0 && LRN.track === 'f2l' ? 'This is your cube, with white on the bottom, so turn yours over first. ' : '') + d.text + (bn ? ' ' + bn : '');
+        el.nowHint.textContent = d.hint + (faceHidden(m) ? ' This face is on the far side, so drag the cube or tap Flip view to see it.' : '');
       } else {
-        el.nowText.textContent = d.text + (l.why && l.why[G.step] ? ' ' + l.why[G.step] : '');
-        el.nowHint.textContent = d.hint + (faceHidden(m) ? ' This face is on the far side, so tap Flip view to see it.' : '') + (l.plain || LRN.track === 'beg' ? '' : ' ' + pieceLine());
+        el.nowText.textContent = d.text + (bn ? ' ' + bn : (l.why && l.why[G.step] ? ' ' + l.why[G.step] : ''));
+        el.nowHint.textContent = d.hint + (faceHidden(m) ? ' This face is on the far side, so drag the cube or tap Flip view to see it.' : '') + (l.plain || LRN.track === 'beg' ? '' : ' ' + pieceLine());
       }
     } else if (N === 0 && l.stage) {
       el.count.textContent = '';
@@ -3895,7 +4025,7 @@ var CFOP = (function () {
     applyVisibility();
     var KEYS = 'The cube stays put and the glowing face is the one to turn. Flip view shows the far side. Keys: ← → step, P play';
     sp.gTitle.textContent = sol ? 'Solution guide' : v === 'learn' ? 'Lesson guide' : 'Move guide';
-    sp.gCap.textContent = sol ? KEYS + '. Colour keys: W Y G B R O, E erases.' : v === 'learn' ? KEYS + '. Each lesson says how to hold the cube, with green always in front.' : KEYS + ', R random, Space new scramble.';
+    sp.gCap.textContent = sol ? KEYS + '. Colour keys: W Y G B R O, E erases.' : v === 'learn' ? KEYS + '. Drag the cube to look all round it.' : KEYS + ', R random, Space new scramble.';
     if (sol) { renderPaint(); pickColor(curColor); sp.out.hidden = !SOL.moves.length; }
     if (v === 'learn') renderLearn();
     renderMoves();
