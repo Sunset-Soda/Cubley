@@ -1549,11 +1549,15 @@ try {
 
     <div class="card" id="learnCard" hidden>
       <div class="row">
-        <h2 class="eyebrow">Learn F2L</h2>
+        <h2 class="eyebrow" id="lrnEyebrow">Learn F2L</h2>
         <span class="len" id="lrnProg" aria-live="polite"></span>
       </div>
+      <div class="method" id="lrnTrack" role="radiogroup" aria-label="Which method to learn">
+        <button type="button" role="radio" aria-checked="true" data-t="f2l"><b>F2L</b><small>Faster, for after the basics</small></button>
+        <button type="button" role="radio" aria-checked="false" data-t="beg"><b>Beginner</b><small>One layer at a time</small></button>
+      </div>
       <div class="method" id="lrnCube" role="radiogroup" aria-label="Which cube to show in the guide">
-        <button type="button" role="radio" aria-checked="true" data-m="ex"><b>Example cube</b><small>Solved, with one pair to fix</small></button>
+        <button type="button" role="radio" aria-checked="true" data-m="ex"><b>Example cube</b><small id="lrnExSmall">Solved, with one pair to fix</small></button>
         <button type="button" role="radio" aria-checked="false" data-m="mine"><b>My cube</b><small>The one you coloured in</small></button>
       </div>
       <p class="plain" id="lrnCubeNote" hidden></p>
@@ -3560,7 +3564,9 @@ var CFOP = (function () {
     moves: document.getElementById('lrnMoves'), plain: document.getElementById('lrnPlain'),
     prev: document.getElementById('lrnPrev'), next: document.getElementById('lrnNext')
   };
-  var LRN = { i: 0, done: {}, mode: 'ex' };
+  var LRN = { i: 0, done: {}, mode: 'ex', track: 'f2l', pos: { f2l: 0, beg: 0 } };
+  var TRACK_KEY = 'cubely-learn-track';
+  try { if (localStorage.getItem(TRACK_KEY) === 'beg') LRN.track = 'beg'; } catch (e) {}
   var CUBE_KEY = 'cubely-learn-cube';
   try { if (localStorage.getItem(CUBE_KEY) === 'mine') LRN.mode = 'mine'; } catch (e) {}
   function paintReady() { var d = diagnose(); return !d.issues.length && !d.empty; }
@@ -3574,8 +3580,9 @@ var CFOP = (function () {
   var PAIR_DONE = 'The pair is home in the slot: white on the bottom, green in front, orange on the right. Nicely done.';
   var JOIN_WHY = ['Slides the pair left, clear of the slot.', 'Lifts whatever is in the slot up into the top layer.', 'Brings the pair back above the slot while the old pieces slide behind.', 'Closes the slot with the pair dropping into it.'];
   var PAIR_WHY = ['Carries the joined pair round to the front-right, above the slot.', 'Drops the pair down into the slot.'];
+  var lrnTrackEl = document.getElementById('lrnTrack'), lrnEyebrowEl = document.getElementById('lrnEyebrow'), lrnExSmallEl = document.getElementById('lrnExSmall');
   var lrnCubeEl = document.getElementById('lrnCube'), lrnNoteEl = document.getElementById('lrnCubeNote');
-  var LESSONS = [
+  var LESSONS_F2L = [
     { id: 'intro', title: 'Meet F2L',
       see: 'F2L means First Two Layers. Once the white cross is done, you finish the bottom layer and the middle layer together, as four pairs. A pair is a white corner plus the edge that matches it.',
       idea: 'Hold the cube with white on the bottom and green in front, exactly as the cube here is held. Each lesson fixes one pair, the white-green-orange corner and the green-orange edge, which belong in the front-right slot. Press Next to step through the moves, or Play to watch them.',
@@ -3625,10 +3632,86 @@ var CFOP = (function () {
       idea: 'Pick a slot and turn the whole cube so that slot is at the front-right. Find its corner and its edge, bring them next to each other on top, then insert them with a lesson above. Repeat for all four slots. Full F2L has 41 cases, but nearly all are these ideas in a different pose. You can colour in your own cube in the Solver to practise.',
       intro: 'Turn the whole cube to bring each unsolved slot to the front-right, then use the lessons. You have got this.' }
   ];
-  function lesson() { return LESSONS[LRN.i]; }
-  function lessonMoves() { var l = lesson(); return l.alg ? l.alg.split(' ') : []; }
+
+  var BEG_SCRAMBLE = "R U2 F' L D B2 R' U F2 L' D2 R B' U' F L2 D R2 U' B";
+  var LESSONS_BEG = [
+    { id: 'b-intro', title: 'Meet the beginner method',
+      see: 'The beginner method solves the cube one layer at a time, using just a handful of short sequences. It takes more moves than F2L, but every step is easy to see and easy to learn.',
+      idea: 'Hold the cube with white on the bottom and green in front, exactly as the cube here is held. There are seven stages: the white cross, the white corners, the middle layer, the yellow cross, then three steps to finish the yellow face. Press Next lesson to go through them, and Play to watch the moves on the cube.',
+      intro: 'This is how you hold the cube: white on the bottom, green in front. Pick a lesson to begin.' },
+    { id: 'b-cross', stage: 'cross', title: 'White cross',
+      see: 'Make a plus shape of four white edge pieces on the bottom. Each one must also match the centre colour of the side it touches.',
+      idea: 'There is no fixed sequence here. Bring the white edges down one at a time, turning the top layer first so the edge lines up above its matching centre.',
+      done: 'The white cross is finished. Every white edge matches the centre beside it.' },
+    { id: 'b-corners', stage: 'corners', title: 'White corners',
+      see: 'Finish the whole bottom layer. Each white corner belongs in the gap between its two side colours.',
+      idea: 'Turn the top layer to bring a corner above its gap, then repeat the four turns Right, Top, Right back, Top back until the corner drops in with white facing down. A corner stuck in the wrong gap is lifted out with the same four turns first. For other gaps, the same four turns are done from the matching side.',
+      done: 'The bottom layer is solved: white on the bottom, and the side colours line up.' },
+    { id: 'b-middle', stage: 'middle', title: 'Middle layer',
+      see: 'Fill the four edges of the middle layer, the ones with no yellow on them.',
+      idea: 'Turn the top layer until the edge matches the centre in front, then use one of two mirrored sequences to slip it into the middle layer, to the right or to the left. An edge sitting in the wrong middle spot is kicked out with the same sequence.',
+      done: 'The first two layers are solved. Only the yellow top is left.' },
+    { id: 'b-topcross', stage: 'topcross', title: 'Yellow cross',
+      see: 'Make a plus shape of yellow on the top. The corners do not matter yet.',
+      idea: 'Repeat Front, Right, Top, Right back, Top back, Front back, turning the top layer between goes if needed, until the yellow plus appears.',
+      done: 'The yellow cross is on top.' },
+    { id: 'b-cornorient', stage: 'cornorient', title: 'Turn the yellow corners',
+      see: 'Make the whole top face yellow. The corners may be in the wrong places, they only need to be twisted yellow side up.',
+      idea: 'Use the Sune sequence, Right, Top, Right back, Top, Right, Top twice, Right back, and repeat it until all four corners show yellow on top. Its mirror image, the anti-Sune, does the same job the other way round.',
+      done: 'The top face is all yellow.' },
+    { id: 'b-cornpos', stage: 'cornpos', title: 'Place the corners',
+      see: 'Now move the yellow corners into their correct places. A corner is correct when its side colours match the centres below it, even if the edges between are not right yet.',
+      idea: 'Find two corners that already match and hold them at the back, then use one corner-swapping sequence. It cycles three corners and leaves the bottom two layers and the yellow face unharmed.',
+      done: 'All four corners are in the right place.' },
+    { id: 'b-edgepos', stage: 'edgepos', title: 'Place the last edges',
+      see: 'Only the four top edges are left, and they need to move around to match the centres.',
+      idea: 'Use the three-edge cycling sequence, with its mirror image if the edges need to go the other way. Check after each go, and turn the top layer to line the colours up when you are finished.',
+      done: 'The cube is solved. Well done!' },
+    { id: 'b-outro', title: 'Putting it together',
+      see: 'You now know the whole beginner method.',
+      idea: 'Solve the white cross, then the white corners, then the middle layer, then the yellow cross, twist the yellow corners, place the corners, and finally place the edges. Colour in your own cube in the Solver and switch to My cube here to practise on it. When you are ready for something faster, try the F2L track.',
+      intro: 'Seven small stages, one layer at a time. You have got this.' }
+  ];
+  var TRACKS = { f2l: LESSONS_F2L, beg: LESSONS_BEG };
+  function LS() { return TRACKS[LRN.track]; }
+  var begMemo = { key: '', plan: null };
+  function begScramble() {
+    var st = solved();
+    BEG_SCRAMBLE.split(' ').forEach(function (m) { applyMove(st, m); });
+    return st;
+  }
+  function begPlan() {
+    var mine = mineOn();
+    var st = mine ? paintState() : begScramble();
+    var key = (mine ? 'm' : 'e') + st.map(function (k) { return k.c; }).join('');
+    if (begMemo.key === key) return begMemo.plan;
+    var r = CFOP.solveBeginner(st);
+    var plan = r.error ? null : { start: CFOP.flip(st), stages: r.stages };
+    begMemo = { key: key, plan: plan };
+    return plan;
+  }
+  function begStage(l) {
+    var plan = begPlan();
+    if (!plan) return null;
+    for (var i = 0; i < plan.stages.length; i++) if (plan.stages[i].label === l.stage) return plan.stages[i];
+    return null;
+  }
+  function begStart() {
+    var l = lesson();
+    var plan = begPlan();
+    if (!plan) return solved();
+    var st = plan.start.map(function (k) { return { p: k.p.slice(), n: k.n.slice(), c: k.c }; });
+    for (var i = 0; i < plan.stages.length; i++) {
+      if (l.id === 'b-intro' || plan.stages[i].label === l.stage) break;
+      plan.stages[i].moves.forEach(function (m) { applyMove(st, m); });
+    }
+    return st;
+  }
+  function lesson() { return LS()[LRN.i]; }
+  function lessonMoves() { var l = lesson(); if (l.stage) { var g = begStage(l); return g ? g.moves.slice() : []; } return l.alg ? l.alg.split(' ') : []; }
   var Z2 = { U: 'D', D: 'U', L: 'R', R: 'L', F: 'F', B: 'B' };
   function lessonStart() {
+    if (LRN.track === 'beg') return begStart();
     if (mineOn()) return CFOP.flip(paintState());
     var st = solved();
     st.forEach(function (k) { k.c = Z2[faceOf(k.n)]; });
@@ -3675,19 +3758,26 @@ var CFOP = (function () {
         el.nowHint.textContent = d.hint + (faceHidden(m) ? ' This face is on the far side, so tap Flip view to see it.' : '');
       } else {
         el.nowText.textContent = d.text + (l.why && l.why[G.step] ? ' ' + l.why[G.step] : '');
-        el.nowHint.textContent = d.hint + (faceHidden(m) ? ' This face is on the far side, so tap Flip view to see it.' : '') + (l.plain ? '' : ' ' + pieceLine());
+        el.nowHint.textContent = d.hint + (faceHidden(m) ? ' This face is on the far side, so tap Flip view to see it.' : '') + (l.plain || LRN.track === 'beg' ? '' : ' ' + pieceLine());
       }
+    } else if (N === 0 && l.stage) {
+      el.count.textContent = '';
+      el.nowMove.textContent = 'Done';
+      el.nowMove.classList.add('done');
+      el.nowText.textContent = 'Nothing to turn here. This step is already finished on this cube.';
+      el.nowHint.textContent = 'Go on to the next lesson.';
+      if (!LRN.done[l.id]) { LRN.done[l.id] = true; saveDone(); renderChips(); }
     } else if (N === 0) {
       el.count.textContent = '';
       el.nowMove.textContent = '–';
       el.nowMove.classList.remove('done');
-      el.nowText.textContent = mineOn() ? 'This is your cube, shown with white on the bottom. Pick a lesson to see its moves on it.' : l.intro;
+      el.nowText.textContent = mineOn() && l.id !== 'b-outro' ? 'This is your cube, shown with white on the bottom. Pick a lesson to see its moves on it.' : l.intro;
       el.nowHint.textContent = '';
     } else {
       el.count.textContent = 'All ' + N + ' moves done';
       el.nowMove.textContent = 'Done';
       el.nowMove.classList.add('done');
-      el.nowText.textContent = mineOn() ? 'That is the whole sequence. Try the same turns on your own cube when you spot this case.' : (l.done || PAIR_DONE);
+      el.nowText.textContent = mineOn() && LRN.track === 'f2l' ? 'That is the whole sequence. Try the same turns on your own cube when you spot this case.' : (l.done || PAIR_DONE);
       el.nowHint.textContent = 'Press Restart to watch it again, or go back to the lessons for the next one.';
       if (!LRN.done[l.id]) { LRN.done[l.id] = true; saveDone(); renderChips(); }
     }
@@ -3695,7 +3785,7 @@ var CFOP = (function () {
   function renderChips() {
     lrn.chips.textContent = '';
     var n = 0;
-    LESSONS.forEach(function (l, i) {
+    LS().forEach(function (l, i) {
       if (LRN.done[l.id]) n++;
       var li = document.createElement('li');
       var b = document.createElement('button');
@@ -3708,7 +3798,7 @@ var CFOP = (function () {
       li.appendChild(b);
       lrn.chips.appendChild(li);
     });
-    lrn.prog.textContent = n + ' of ' + LESSONS.length + ' done';
+    lrn.prog.textContent = n + ' of ' + LS().length + ' done';
   }
   function renderLearn() {
     var l = lesson();
@@ -3721,17 +3811,20 @@ var CFOP = (function () {
     var ib = document.createElement('b'); ib.textContent = l.alg ? 'The idea: ' : '';
     lrn.idea.appendChild(ib); lrn.idea.appendChild(document.createTextNode(l.idea));
     var ready = paintReady();
+    Array.prototype.forEach.call(lrnTrackEl.querySelectorAll('button'), function (b) { b.setAttribute('aria-checked', b.getAttribute('data-t') === LRN.track ? 'true' : 'false'); });
+    lrnEyebrowEl.textContent = LRN.track === 'beg' ? 'Learn the beginner method' : 'Learn F2L';
+    lrnExSmallEl.textContent = LRN.track === 'beg' ? 'A scrambled practice cube' : 'Solved, with one pair to fix';
     Array.prototype.forEach.call(lrnCubeEl.querySelectorAll('button'), function (b) { b.setAttribute('aria-checked', b.getAttribute('data-m') === (LRN.mode === 'mine' && ready ? 'mine' : 'ex') ? 'true' : 'false'); });
     lrnNoteEl.hidden = !(LRN.mode === 'mine' && !ready);
     lrnNoteEl.textContent = 'Colour in every square of your cube on the Solver first. Until then the example cube is shown.';
     var has = state.moves.length > 0;
     lrn.moves.hidden = !has; lrn.plain.hidden = !has;
     lrn.prev.disabled = LRN.i === 0;
-    lrn.next.disabled = LRN.i === LESSONS.length - 1;
+    lrn.next.disabled = LRN.i === LS().length - 1;
     lrn.next.textContent = LRN.i === 0 ? 'Start lesson 2' : 'Next lesson';
   }
   function selectLesson(i, show) {
-    if (i < 0 || i >= LESSONS.length) return;
+    if (i < 0 || i >= LS().length) return;
     LRN.i = i;
     pause();
     state.moves = lessonMoves();
@@ -3755,6 +3848,14 @@ var CFOP = (function () {
     LRN.mode = b.getAttribute('data-m');
     try { localStorage.setItem(CUBE_KEY, LRN.mode); } catch (x) {}
     selectLesson(LRN.i, false);
+  });
+  lrnTrackEl.addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-t]');
+    if (!b || b.getAttribute('data-t') === LRN.track) return;
+    LRN.pos[LRN.track] = LRN.i;
+    LRN.track = b.getAttribute('data-t');
+    try { localStorage.setItem(TRACK_KEY, LRN.track); } catch (x) {}
+    selectLesson(LRN.pos[LRN.track] || 0, false);
   });
   lrn.prev.addEventListener('click', function () { selectLesson(LRN.i - 1, false); });
   lrn.next.addEventListener('click', function () { selectLesson(LRN.i + 1, true); });
@@ -3786,7 +3887,7 @@ var CFOP = (function () {
     applyVisibility();
     var KEYS = 'The cube stays put and the glowing face is the one to turn. Flip view shows the far side. Keys: ← → step, P play';
     sp.gTitle.textContent = sol ? 'Solution guide' : v === 'learn' ? 'Lesson guide' : 'Move guide';
-    sp.gCap.textContent = sol ? KEYS + '. Colour keys: W Y G B R O, E erases.' : v === 'learn' ? KEYS + '. White is on the bottom and green in front, the way you hold the cube for F2L.' : KEYS + ', R random, Space new scramble.';
+    sp.gCap.textContent = sol ? KEYS + '. Colour keys: W Y G B R O, E erases.' : v === 'learn' ? KEYS + '. White is on the bottom and green in front, the way you hold the cube for these lessons.' : KEYS + ', R random, Space new scramble.';
     if (sol) { renderPaint(); pickColor(curColor); sp.out.hidden = !SOL.moves.length; }
     if (v === 'learn') renderLearn();
     renderMoves();
