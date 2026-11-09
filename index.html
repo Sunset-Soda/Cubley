@@ -2734,6 +2734,39 @@ var CFOP = (function () {
     setCam();
   })();
 
+  var syncDrag = function () {};
+  (function dragLook() {
+    var scene = el.cube.parentNode, d = null, was = false;
+    function allowed() { return VIEW === 'learn' && LRN.track === 'beg'; }
+    syncDrag = function () {
+      var ok = allowed();
+      scene.style.touchAction = ok ? 'none' : ''; scene.style.cursor = ok ? 'grab' : '';
+      if (!ok && was) { d = null; el.cube.style.transition = ''; goView(G.view); }
+      was = ok;
+    };
+    syncDrag();
+    scene.addEventListener('pointerdown', function (e) {
+      if (e.button || !allowed()) return;
+      d = { x: e.clientX, y: e.clientY, id: e.pointerId };
+      try { scene.setPointerCapture(e.pointerId); } catch (x) {}
+      el.cube.style.transition = 'none'; scene.style.cursor = 'grabbing';
+    });
+    scene.addEventListener('pointermove', function (e) {
+      if (!d || e.pointerId !== d.id) return;
+      cam.ry += (e.clientX - d.x) * 0.6;
+      cam.rx = Math.max(-85, Math.min(85, cam.rx - (e.clientY - d.y) * 0.6));
+      d.x = e.clientX; d.y = e.clientY;
+      setCam();
+    });
+    function end(e) {
+      if (!d || e.pointerId !== d.id) return;
+      d = null; el.cube.style.transition = ''; scene.style.cursor = 'grab';
+      var m = state.moves[G.step];
+      if (m && VIEW === 'learn') { var dd = describe(m); el.nowHint.textContent = dd.hint + (faceHidden(m) ? ' This face is on the far side, so drag the cube or tap Flip view to see it.' : ''); }
+    }
+    scene.addEventListener('pointerup', end);
+    scene.addEventListener('pointercancel', end);
+  })();
   function paintState() { return stateFromNet(paint); }
   function startState() { return VIEW === 'solver' ? (SOL.method === 'f2l' && (SOL.moves.length || SOL.solved) ? CFOP.flip(paintState()) : paintState()) : VIEW === 'learn' ? lessonStart() : solved(); }
   function recolour() {
@@ -3930,6 +3963,7 @@ var CFOP = (function () {
     lrn.prev.disabled = LRN.i === 0;
     lrn.next.disabled = LRN.i === LS().length - 1;
     lrn.next.textContent = LRN.i === 0 ? 'Start lesson 2' : 'Next lesson';
+    syncDrag();
   }
   function selectLesson(i, show) {
     if (i < 0 || i >= LS().length) return;
@@ -3995,8 +4029,9 @@ var CFOP = (function () {
     applyVisibility();
     var KEYS = 'The cube stays put and the glowing face is the one to turn. Flip view shows the far side. Keys: ← → step, P play';
     sp.gTitle.textContent = sol ? 'Solution guide' : v === 'learn' ? 'Lesson guide' : 'Move guide';
-    sp.gCap.textContent = sol ? KEYS + '. Colour keys: W Y G B R O, E erases.' : v === 'learn' ? KEYS + '.' : KEYS + ', R random, Space new scramble.';
+    sp.gCap.textContent = sol ? KEYS + '. Colour keys: W Y G B R O, E erases.' : v === 'learn' ? KEYS + '. In the Beginner lessons you can also drag the cube to look all round it.' : KEYS + ', R random, Space new scramble.';
     if (sol) { renderPaint(); pickColor(curColor); sp.out.hidden = !SOL.moves.length; }
+    syncDrag();
     if (v === 'learn') renderLearn();
     renderMoves();
     jumpTo(0);
