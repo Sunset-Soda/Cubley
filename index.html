@@ -2706,7 +2706,7 @@ var CFOP = (function () {
     });
     var N = state.moves.length;
     el.netCap.textContent = N === 0 ? 'This is the cube you painted.' : (G.step >= N ? 'After all ' + N + ' moves. Your cube should match this.' : 'After move ' + G.step + ' of ' + N + '.') +
-      (VIEW === 'learn' || (VIEW === 'solver' && SOL.method === 'f2l' && SOL.moves.length) ? ' Here white is on the bottom and green is in front. The top square sits above front, with left, front, right and back across the middle.' : ' Hold white on top and green in front. The top square sits above front, with left, front, right and back across the middle.');
+      ((VIEW === 'learn' && !learnTop()) || (VIEW === 'solver' && SOL.method === 'f2l' && SOL.moves.length) ? ' Here white is on the bottom and green is in front. The top square sits above front, with left, front, right and back across the middle.' : ' Hold white on top and green in front. The top square sits above front, with left, front, right and back across the middle.');
   }
   el.netBtn.addEventListener('click', function () {
     var open = el.netbox.hidden;
@@ -3635,18 +3635,22 @@ var CFOP = (function () {
 
   var BEG_SCRAMBLE = "R U2 F' L D B2 R' U F2 L' D2 R B' U' F L2 D R2 U' B";
   var LESSONS_BEG = [
-    { id: 'b-intro', title: 'Meet the beginner method',
+    { id: 'b-intro', title: 'Meet the beginner method', top: true, at: 'cross',
       see: 'The beginner method solves the cube one layer at a time, using just a handful of short sequences. It takes more moves than F2L, but every step is easy to see and easy to learn.',
-      idea: 'Hold the cube with white on the bottom and green in front, exactly as the cube here is held. There are seven stages: the white cross, the white corners, the middle layer, the yellow cross, then three steps to finish the yellow face. Press Next lesson to go through them, and Play to watch the moves on the cube.',
-      intro: 'This is how you hold the cube: white on the bottom, green in front. Pick a lesson to begin.' },
-    { id: 'b-cross', stage: 'cross', title: 'White cross',
-      see: 'Make a plus shape of four white edge pieces on the bottom. Each one must also match the centre colour of the side it touches.',
-      idea: 'There is no fixed sequence here. Bring the white edges down one at a time, turning the top layer first so the edge lines up above its matching centre.',
+      idea: 'Start with white on top and green in front, exactly as the cube here is held. You make the white cross and fill in the white corners like that. Then you turn the whole cube over, so white is on the bottom, for the middle layer and the yellow top.',
+      intro: 'This is how you start: white on top, green in front. Pick a lesson to begin.' },
+    { id: 'b-cross', stage: 'cross', top: true, title: 'White cross',
+      see: 'Make a white plus on the top face. Each white edge must also match the centre colour of the side it touches.',
+      idea: 'There is no fixed sequence here. Bring the white edges up to the top one at a time, and line up each side colour with its matching centre.',
       done: 'The white cross is finished. Every white edge matches the centre beside it.' },
-    { id: 'b-corners', stage: 'corners', title: 'White corners',
-      see: 'Finish the whole bottom layer. Each white corner belongs in the gap between its two side colours.',
-      idea: 'Turn the top layer to bring a corner above its gap, then repeat the four turns Right, Top, Right back, Top back until the corner drops in with white facing down. A corner stuck in the wrong gap is lifted out with the same four turns first. For other gaps, the same four turns are done from the matching side.',
-      done: 'The bottom layer is solved: white on the bottom, and the side colours line up.' },
+    { id: 'b-corners', stage: 'corners', top: true, title: 'White corners',
+      see: 'Finish the white layer. Each white corner belongs in the gap between its two side colours.',
+      idea: 'Take the corner to the bottom layer, right below the gap where it belongs. Then repeat four turns: a side face, the bottom, the same side face back, the bottom back. Keep going until the corner pops up into the gap with white on top. If a corner is in the wrong gap, the same four turns lift it out first. Use the side face next to the corner, the guide tells you which.',
+      done: 'The white layer is solved: white on top, and the side colours line up.' },
+    { id: 'b-flip', at: 'middle', title: 'Turn the cube over',
+      see: 'The rest of the method is easier with the finished white layer underneath, out of the way.',
+      idea: 'Spin the whole cube half a turn, like a steering wheel, so white is on the bottom and yellow is on top. Keep green in front. Nothing else changes. The cube here shows how yours should look afterwards.',
+      intro: 'Spin the whole cube half a turn so white is on the bottom and yellow is on top. Green stays in front.' },
     { id: 'b-middle', stage: 'middle', title: 'Middle layer',
       see: 'Fill the four edges of the middle layer, the ones with no yellow on them.',
       idea: 'Turn the top layer until the edge matches the centre in front, then use one of two mirrored sequences to slip it into the middle layer, to the right or to the left. An edge sitting in the wrong middle spot is kicked out with the same sequence.',
@@ -3669,7 +3673,7 @@ var CFOP = (function () {
       done: 'The cube is solved. Well done!' },
     { id: 'b-outro', title: 'Putting it together',
       see: 'You now know the whole beginner method.',
-      idea: 'Solve the white cross, then the white corners, then the middle layer, then the yellow cross, twist the yellow corners, place the corners, and finally place the edges. Colour in your own cube in the Solver and switch to My cube here to practise on it. When you are ready for something faster, try the F2L track.',
+      idea: 'Make the white cross and the white corners with white on top. Turn the cube over, then do the middle layer, the yellow cross, twist the yellow corners, place the corners, and finally place the edges. Colour in your own cube in the Solver and switch to My cube here to practise on it. When you are ready for something faster, try the F2L track.',
       intro: 'Seven small stages, one layer at a time. You have got this.' }
   ];
   var TRACKS = { f2l: LESSONS_F2L, beg: LESSONS_BEG };
@@ -3686,7 +3690,7 @@ var CFOP = (function () {
     var key = (mine ? 'm' : 'e') + st.map(function (k) { return k.c; }).join('');
     if (begMemo.key === key) return begMemo.plan;
     var r = CFOP.solveBeginner(st);
-    var plan = r.error ? null : { start: CFOP.flip(st), stages: r.stages };
+    var plan = r.error ? null : { real: st, start: CFOP.flip(st), stages: r.stages };
     begMemo = { key: key, plan: plan };
     return plan;
   }
@@ -3696,19 +3700,23 @@ var CFOP = (function () {
     for (var i = 0; i < plan.stages.length; i++) if (plan.stages[i].label === l.stage) return plan.stages[i];
     return null;
   }
+  function mapTok(m) { return Z2[m.charAt(0)] + m.slice(1); }
   function begStart() {
     var l = lesson();
     var plan = begPlan();
     if (!plan) return solved();
-    var st = plan.start.map(function (k) { return { p: k.p.slice(), n: k.n.slice(), c: k.c }; });
+    var base = l.top ? plan.real : plan.start;
+    var st = base.map(function (k) { return { p: k.p.slice(), n: k.n.slice(), c: k.c }; });
+    var target = l.stage || l.at;
     for (var i = 0; i < plan.stages.length; i++) {
-      if (l.id === 'b-intro' || plan.stages[i].label === l.stage) break;
-      plan.stages[i].moves.forEach(function (m) { applyMove(st, m); });
+      if (plan.stages[i].label === target) break;
+      plan.stages[i].moves.forEach(function (m) { applyMove(st, l.top ? mapTok(m) : m); });
     }
     return st;
   }
+  function learnTop() { try { return VIEW === 'learn' && LRN.track === 'beg' && !!lesson().top; } catch (e) { return false; } }
   function lesson() { return LS()[LRN.i]; }
-  function lessonMoves() { var l = lesson(); if (l.stage) { var g = begStage(l); return g ? g.moves.slice() : []; } return l.alg ? l.alg.split(' ') : []; }
+  function lessonMoves() { var l = lesson(); if (l.stage) { var g = begStage(l); return g ? g.moves.map(function (m) { return l.top ? mapTok(m) : m; }) : []; } return l.alg ? l.alg.split(' ') : []; }
   var Z2 = { U: 'D', D: 'U', L: 'R', R: 'L', F: 'F', B: 'B' };
   function lessonStart() {
     if (LRN.track === 'beg') return begStart();
@@ -3754,7 +3762,7 @@ var CFOP = (function () {
       el.nowMove.textContent = m;
       el.nowMove.classList.remove('done');
       if (mineOn()) {
-        el.nowText.textContent = (G.step === 0 ? 'This is your cube, with white on the bottom, so turn yours over first. ' : '') + d.text;
+        el.nowText.textContent = (G.step === 0 && !learnTop() ? 'This is your cube, with white on the bottom, so turn yours over first. ' : '') + d.text;
         el.nowHint.textContent = d.hint + (faceHidden(m) ? ' This face is on the far side, so tap Flip view to see it.' : '');
       } else {
         el.nowText.textContent = d.text + (l.why && l.why[G.step] ? ' ' + l.why[G.step] : '');
@@ -3771,7 +3779,7 @@ var CFOP = (function () {
       el.count.textContent = '';
       el.nowMove.textContent = '–';
       el.nowMove.classList.remove('done');
-      el.nowText.textContent = mineOn() && l.id !== 'b-outro' ? 'This is your cube, shown with white on the bottom. Pick a lesson to see its moves on it.' : l.intro;
+      el.nowText.textContent = mineOn() && l.id !== 'b-outro' && l.id !== 'b-flip' ? (learnTop() ? 'This is your cube, held with white on top and green in front. Pick a lesson to see its moves on it.' : 'This is your cube, shown with white on the bottom. Pick a lesson to see its moves on it.') : l.intro;
       el.nowHint.textContent = '';
     } else {
       el.count.textContent = 'All ' + N + ' moves done';
@@ -3887,7 +3895,7 @@ var CFOP = (function () {
     applyVisibility();
     var KEYS = 'The cube stays put and the glowing face is the one to turn. Flip view shows the far side. Keys: ← → step, P play';
     sp.gTitle.textContent = sol ? 'Solution guide' : v === 'learn' ? 'Lesson guide' : 'Move guide';
-    sp.gCap.textContent = sol ? KEYS + '. Colour keys: W Y G B R O, E erases.' : v === 'learn' ? KEYS + '. White is on the bottom and green in front, the way you hold the cube for these lessons.' : KEYS + ', R random, Space new scramble.';
+    sp.gCap.textContent = sol ? KEYS + '. Colour keys: W Y G B R O, E erases.' : v === 'learn' ? KEYS + '. Each lesson says how to hold the cube, with green always in front.' : KEYS + ', R random, Space new scramble.';
     if (sol) { renderPaint(); pickColor(curColor); sp.out.hidden = !SOL.moves.length; }
     if (v === 'learn') renderLearn();
     renderMoves();
