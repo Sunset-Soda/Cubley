@@ -7,7 +7,7 @@
 <link rel="icon" type="image/png" href="icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Yellowtail&family=Josefin+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Playfair+Display:wght@700&family=Permanent+Marker&family=Special+Elite&family=Abril+Fatface&family=Rubik+Mono+One&family=Courier+Prime:wght@400;700&family=Rye&family=Fredoka:wght@400;500;600;700&family=Pinyon+Script&family=Cormorant+Garamond:wght@500;600;700&family=Caveat:wght@700&family=Cutive+Mono&family=Syncopate:wght@700&family=Outfit:wght@400;500;600;700&family=Unbounded:wght@600;700&family=DM+Mono:wght@400;500&family=Titan+One&family=Archivo:wght@400;500;600;700&family=Anton&family=IBM+Plex+Mono:wght@400;500&family=Bangers&family=Luckiest+Guy&family=Nunito:wght@400;600;700&family=Roboto+Mono:wght@400;500&family=Michroma&family=Barlow:wght@400;500;600;700&family=Chakra+Petch:wght@600;700&family=Share+Tech+Mono&family=Cinzel+Decorative:wght@700&family=Cinzel:wght@600;700&family=Raleway:wght@400;500;600;700&family=Overpass+Mono:wght@400;500&family=Uncial+Antiqua&family=Philosopher:wght@400;700&family=Alegreya+Sans:wght@400;500;700&family=Fira+Mono:wght@400;500&family=Bungee&family=Bowlby+One&family=Alfa+Slab+One&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Yellowtail&family=Josefin+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Playfair+Display:wght@700&family=Permanent+Marker&family=Special+Elite&family=Abril+Fatface&family=Rubik+Mono+One&family=Courier+Prime:wght@400;700&family=Rye&family=Fredoka:wght@400;500;600;700&family=Pinyon+Script&family=Cormorant+Garamond:wght@500;600;700&family=Caveat:wght@700&family=Cutive+Mono&family=Syncopate:wght@700&family=Outfit:wght@400;500;600;700&family=Unbounded:wght@600;700&family=DM+Mono:wght@400;500&family=Titan+One&family=Archivo:wght@400;500;600;700&family=Anton&family=IBM+Plex+Mono:wght@400;500&family=Bangers&family=Luckiest+Guy&family=Nunito:wght@400;600;700&family=Roboto+Mono:wght@400;500&family=Michroma&family=Barlow:wght@400;500;600;700&family=Chakra+Petch:wght@600;700&family=Share+Tech+Mono&family=Cinzel+Decorative:wght@700&family=Cinzel:wght@600;700&family=Raleway:wght@400;500;600;700&family=Overpass+Mono:wght@400;500&family=Uncial+Antiqua&family=Philosopher:wght@400;700&family=Alegreya+Sans:wght@400;500;700&family=Fira+Mono:wght@400;500&family=Bungee&family=Bowlby+One&family=Alfa+Slab+One&family=Pacifico&family=Quicksand:wght@400;500;600;700&family=Big+Shoulders+Display:wght@700;800&family=Rubik:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Teko:wght@500;600;700&family=Staatliches&display=swap" rel="stylesheet">
 <style>
 /* Layout: scramble tiles on the left (tap one to jump), a turning 3D cube with step controls on the right, previous scrambles underneath. */
 :root {
@@ -545,6 +545,193 @@ color-scheme: dark;
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"])[data-skin="spark"], :root:not([data-theme="light"])[data-skin="lucha"], :root:not([data-theme="light"])[data-skin="ember"] { --hl: var(--accent); } }
 :root[data-theme="dark"][data-skin="spark"], :root[data-theme="dark"][data-skin="lucha"], :root[data-theme="dark"][data-skin="ember"] { --hl: var(--accent); }
 
+/* Crescent Sparkle: candy pink, midnight blue and moon gold */
+:root[data-skin="moon"] {
+  --bg: #FDE7F3;
+  --surface: #FFFBFE;
+  --ink: #261A52;
+  --ink-2: #5E4F94;
+  --line: #EBCBE8;
+  --btn-bg: #3F4BC4;
+  --btn-fg: #FFFBFE;
+  --plastic: #170F3B;
+  --focus: #2B34A3;
+  --accent: #B8247E;
+  --accent-soft: #FFD6EB;
+  --tile-2: #FFF0A8;
+  --btn-edge: #F2C230;
+  --font-display: "Pacifico", "Brush Script MT", cursive; --font-ui: "Quicksand", "Trebuchet MS", sans-serif; --font-mono: "Fira Mono", "Courier New", monospace; --font-moves: "Fredoka", "Trebuchet MS", sans-serif;
+  --h1-style: normal; --h1-size: clamp(2.3rem, 8.4vw, 3.7rem); --h1-shadow: 2px 2px 0 var(--tile-2);
+  --r-card: 28px; --r-tile: 20px; --r-btn: 999px; --card-bw: 2px; --card-shadow: 0 0 0 4px var(--surface), 0 0 0 6px var(--line);
+  --hl: #E0457B;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"])[data-skin="moon"] {
+  --bg: #140F33;
+  --surface: #201A4A;
+  --ink: #FFF4FB;
+  --ink-2: #CFC4F4;
+  --line: #3D3580;
+  --btn-bg: #FFD84D;
+  --btn-fg: #1A1240;
+  --plastic: #0A0620;
+  --focus: #FFE88A;
+  --accent: #FF9BD6;
+  --accent-soft: #2F2868;
+  --tile-2: #5C4A1B;
+  --btn-edge: #FFF4FB;
+  --hl: #FF9BD6;
+  color-scheme: dark;
+  }
+}
+:root[data-theme="dark"][data-skin="moon"] {
+  --bg: #140F33;
+  --surface: #201A4A;
+  --ink: #FFF4FB;
+  --ink-2: #CFC4F4;
+  --line: #3D3580;
+  --btn-bg: #FFD84D;
+  --btn-fg: #1A1240;
+  --plastic: #0A0620;
+  --focus: #FFE88A;
+  --accent: #FF9BD6;
+  --accent-soft: #2F2868;
+  --tile-2: #5C4A1B;
+  --btn-edge: #FFF4FB;
+  --hl: #FF9BD6;
+  color-scheme: dark;
+}
+
+/* Midnight Drift: asphalt black, headlight yellow and a flash of cyan */
+:root[data-skin="drift"] {
+  --bg: #E8EAEE;
+  --surface: #FFFFFF;
+  --ink: #11141B;
+  --ink-2: #475063;
+  --line: #C3C9D4;
+  --btn-bg: #11141B;
+  --btn-fg: #FFC21A;
+  --plastic: #0B0D12;
+  --focus: #0B5FD1;
+  --accent: #A84A00;
+  --accent-soft: #FFE3B0;
+  --tile-2: #FFD770;
+  --btn-edge: #FFC21A;
+  --font-display: "Big Shoulders Display", "Arial Narrow", sans-serif; --font-ui: "Rubik", "Helvetica Neue", Arial, sans-serif; --font-mono: "JetBrains Mono", "Courier New", monospace; --font-moves: "Teko", "Arial Narrow", sans-serif;
+  --h1-style: italic; --h1-size: clamp(1.9rem, 7.2vw, 3.2rem); --h1-shadow: 2px 2px 0 var(--accent-soft);
+  --r-card: 6px; --r-tile: 3px; --r-btn: 4px; --card-bw: 2px; --card-shadow: inset 6px 0 0 var(--accent);
+  --hl: #0090D8;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"])[data-skin="drift"] {
+  --bg: #090B11;
+  --surface: #141824;
+  --ink: #F3F5F9;
+  --ink-2: #A5ACBD;
+  --line: #2B3245;
+  --btn-bg: #FFB81C;
+  --btn-fg: #15100A;
+  --plastic: #000000;
+  --focus: #7CC8FF;
+  --accent: #FFB81C;
+  --accent-soft: #2A2410;
+  --tile-2: #3B300E;
+  --btn-edge: #FFB81C;
+  --hl: #28C4FF;
+  color-scheme: dark;
+  }
+}
+:root[data-theme="dark"][data-skin="drift"] {
+  --bg: #090B11;
+  --surface: #141824;
+  --ink: #F3F5F9;
+  --ink-2: #A5ACBD;
+  --line: #2B3245;
+  --btn-bg: #FFB81C;
+  --btn-fg: #15100A;
+  --plastic: #000000;
+  --focus: #7CC8FF;
+  --accent: #FFB81C;
+  --accent-soft: #2A2410;
+  --tile-2: #3B300E;
+  --btn-edge: #FFB81C;
+  --hl: #28C4FF;
+  color-scheme: dark;
+}
+
+/* Ringside Rush: boxing-glove red, ring-canvas cream and corner blue */
+:root[data-skin="ring"] {
+  --bg: #F3E8D0;
+  --surface: #FFFDF6;
+  --ink: #17110C;
+  --ink-2: #5A4F42;
+  --line: #DBCDAB;
+  --btn-bg: #C21F1D;
+  --btn-fg: #FFFDF6;
+  --plastic: #120C08;
+  --focus: #1648B8;
+  --accent: #BB1B19;
+  --accent-soft: #F8D3C8;
+  --tile-2: #D2E0F8;
+  --btn-edge: #E8B923;
+  --font-display: "Staatliches", Impact, sans-serif; --font-ui: "Barlow", "Helvetica Neue", Arial, sans-serif; --font-mono: "Roboto Mono", "Courier New", monospace; --font-moves: "Staatliches", Impact, sans-serif;
+  --h1-style: normal; --h1-size: clamp(2.2rem, 8vw, 3.8rem); --h1-shadow: 3px 3px 0 var(--accent-soft);
+  --r-card: 8px; --r-tile: 4px; --r-btn: 6px; --card-bw: 3px; --card-shadow: inset 0 0 0 4px var(--surface), inset 0 0 0 6px var(--hl);
+  --hl: #1F54C8;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"])[data-skin="ring"] {
+  --bg: #0D0F17;
+  --surface: #171A27;
+  --ink: #FFF6E6;
+  --ink-2: #BFB6A4;
+  --line: #343A4D;
+  --btn-bg: #FF4C3F;
+  --btn-fg: #1A0705;
+  --plastic: #000000;
+  --focus: #8DB8FF;
+  --accent: #FF6254;
+  --accent-soft: #3B1612;
+  --tile-2: #18305F;
+  --btn-edge: #F2C230;
+  --hl: #6FA5FF;
+  color-scheme: dark;
+  }
+}
+:root[data-theme="dark"][data-skin="ring"] {
+  --bg: #0D0F17;
+  --surface: #171A27;
+  --ink: #FFF6E6;
+  --ink-2: #BFB6A4;
+  --line: #343A4D;
+  --btn-bg: #FF4C3F;
+  --btn-fg: #1A0705;
+  --plastic: #000000;
+  --focus: #8DB8FF;
+  --accent: #FF6254;
+  --accent-soft: #3B1612;
+  --tile-2: #18305F;
+  --btn-edge: #F2C230;
+  --hl: #6FA5FF;
+  color-scheme: dark;
+}
+
+
+/* New themes: tuning and extra art layers */
+:root[data-skin="moon"] h1 { line-height: 1.2; }
+:root[data-skin="moon"] .btn.primary, :root[data-skin="moon"] .btn { box-shadow: 0 3px 0 var(--btn-edge); }
+:root[data-skin="drift"] h1 { font-weight: 800; letter-spacing: 0.03em; text-transform: uppercase; line-height: 1.1; }
+:root[data-skin="drift"] .eyebrow { letter-spacing: 0.2em; }
+:root[data-skin="drift"] .btn, :root[data-skin="drift"] .tab { text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; }
+:root[data-skin="ring"] h1 { letter-spacing: 0.04em; text-transform: uppercase; line-height: 1.1; }
+:root[data-skin="ring"] .eyebrow { letter-spacing: 0.18em; }
+:root[data-skin="ring"] .btn, :root[data-skin="ring"] .tab { text-transform: uppercase; letter-spacing: 0.07em; font-weight: 700; }
+.art-drift .gauge { position: absolute; top: 14px; right: max(3%, 12px); width: clamp(56px, 13vw, 130px); height: auto; opacity: 0.7; }
+.art-ring .ropes { position: absolute; left: 0; right: 0; bottom: 0; height: 22%; display: flex; flex-direction: column; justify-content: space-evenly; -webkit-mask-image: linear-gradient(transparent, #000 60%); mask-image: linear-gradient(transparent, #000 60%); }
+.art-ring .ropes i { display: block; height: 6px; background: linear-gradient(90deg, var(--accent), var(--hl), var(--accent)); opacity: 0.35; border-radius: 3px; }
+
+.crescent { position: absolute; top: 10px; right: max(3%, 12px); width: clamp(50px, 12vw, 120px); height: auto; opacity: 0.85; }
+
 body {
   background: radial-gradient(60rem 28rem at 88% -8%, var(--accent-soft), transparent 62%) no-repeat, var(--bg);
   color: var(--ink);
@@ -564,20 +751,20 @@ body {
 :root[data-skin="grape"] .art-grape, :root[data-skin="disco"] .art-disco,
 :root[data-skin="diary"] .art-diary, :root[data-skin="chrome"] .art-chrome,
 :root[data-skin="riot"] .art-riot, :root[data-skin="crate"] .art-crate, :root[data-skin="shore"] .art-shore,
-:root[data-skin="witch"] .art-witch, :root[data-skin="meadow"] .art-meadow, :root[data-skin="spark"] .art-spark, :root[data-skin="lucha"] .art-lucha, :root[data-skin="ember"] .art-ember { display: block; }
+:root[data-skin="witch"] .art-witch, :root[data-skin="meadow"] .art-meadow, :root[data-skin="spark"] .art-spark, :root[data-skin="lucha"] .art-lucha, :root[data-skin="ember"] .art-ember, :root[data-skin="moon"] .art-moon, :root[data-skin="drift"] .art-drift, :root[data-skin="ring"] .art-ring { display: block; }
 .art-svg, .ht svg { position: absolute; inset: 0; width: 100%; height: 100%; }
 .art-disco .rays { position: absolute; inset: 0; background: repeating-conic-gradient(from 0deg at 50% -8%, color-mix(in srgb, var(--btn-bg) 24%, transparent) 0 6deg, transparent 6deg 12deg); -webkit-mask-image: linear-gradient(#000, transparent 80%); mask-image: linear-gradient(#000, transparent 80%); }
 .discoball { position: absolute; top: -8px; right: max(4%, 16px); width: clamp(60px, 14vw, 130px); height: auto; opacity: 0.55; }
-.moon { position: absolute; top: 10px; right: max(3%, 12px); width: clamp(50px, 12vw, 120px); height: auto; opacity: 0.85; }
+svg.moon:not(.deco) { position: absolute; top: 10px; right: max(3%, 12px); width: clamp(50px, 12vw, 120px); height: auto; opacity: 0.85; }
 .art-chrome .sheen { position: absolute; inset: 0; background:
   linear-gradient(115deg, transparent 0 16%, color-mix(in srgb, var(--surface) 80%, transparent) 25%, transparent 36% 54%, color-mix(in srgb, var(--surface) 60%, transparent) 61%, transparent 70%),
   repeating-linear-gradient(115deg, color-mix(in srgb, var(--ink) 5%, transparent) 0 1px, transparent 1px 6px); }
 h1 { margin: 0; font-family: var(--font-display); font-style: var(--h1-style); font-weight: 400; font-size: var(--h1-size); line-height: 1.1; letter-spacing: 0; color: var(--accent); text-shadow: var(--h1-shadow); text-wrap: balance; }
 .brand { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; }
 .deco { display: none; width: clamp(46px, 11vw, 64px); height: auto; color: var(--accent); flex: none; }
-:root:not([data-skin]) .deco.cherry, :root[data-skin="cherry"] .deco.cherry, :root[data-skin="grape"] .deco.grape, :root[data-skin="disco"] .deco.disco, :root[data-skin="diary"] .deco.diary, :root[data-skin="chrome"] .deco.chrome, :root[data-skin="riot"] .deco.riot, :root[data-skin="crate"] .deco.crate, :root[data-skin="shore"] .deco.shore, :root[data-skin="witch"] .deco.witch, :root[data-skin="meadow"] .deco.meadow, :root[data-skin="spark"] .deco.spark, :root[data-skin="lucha"] .deco.lucha, :root[data-skin="ember"] .deco.ember { display: block; }
-.spark { width: 16px; height: 16px; color: var(--accent); flex: none; align-self: flex-start; }
-.spark.big { width: 24px; height: 24px; }
+:root:not([data-skin]) .deco.cherry, :root[data-skin="cherry"] .deco.cherry, :root[data-skin="grape"] .deco.grape, :root[data-skin="disco"] .deco.disco, :root[data-skin="diary"] .deco.diary, :root[data-skin="chrome"] .deco.chrome, :root[data-skin="riot"] .deco.riot, :root[data-skin="crate"] .deco.crate, :root[data-skin="shore"] .deco.shore, :root[data-skin="witch"] .deco.witch, :root[data-skin="meadow"] .deco.meadow, :root[data-skin="spark"] .deco.spark, :root[data-skin="lucha"] .deco.lucha, :root[data-skin="ember"] .deco.ember, :root[data-skin="moon"] .deco.moon, :root[data-skin="drift"] .deco.drift, :root[data-skin="ring"] .deco.ring { display: block; }
+.spark:not(.deco) { width: 16px; height: 16px; color: var(--accent); flex: none; align-self: flex-start; }
+.spark.big:not(.deco) { width: 24px; height: 24px; }
 .sub { margin: 6px 0 0; color: var(--ink-2); max-width: 46ch; }
 .eyebrow { margin: 0; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
 
@@ -727,8 +914,8 @@ kbd { font: 500 0.7rem var(--font-mono); padding: 1px 6px; border-radius: 5px; b
 
 @media (prefers-reduced-motion: no-preference) {
   .moves li { animation: pop 0.28s ease backwards; animation-delay: calc(var(--i) * 18ms); }
-  .spark { animation: twinkle 3.4s ease-in-out infinite; }
-  .spark.big { animation-delay: 1.1s; }
+  .spark:not(.deco) { animation: twinkle 3.4s ease-in-out infinite; }
+  .spark.big:not(.deco) { animation-delay: 1.1s; }
   .stk.hl { animation: glow 1.2s ease-in-out infinite; }
   @keyframes pop { from { opacity: 0; transform: translateY(5px); } }
   @keyframes twinkle { 50% { opacity: 0.35; transform: scale(0.8); } }
@@ -1052,7 +1239,7 @@ kbd { font: 500 0.7rem var(--font-mono); padding: 1px 6px; border-radius: 5px; b
   .wrap > header .brand { flex: 0 0 auto; min-width: 0; flex-wrap: nowrap; gap: 6px; overflow: hidden; }
   .wrap > header h1 { font-size: calc(var(--h1-size) * 0.55); white-space: nowrap; }
   .wrap > header .deco { width: 34px; }
-  .wrap > header .spark { display: none; }
+  .wrap > header .spark:not(.deco) { display: none; }
   .wrap > header .sub { display: none; }
   .wrap > header .skins { margin: 0; order: 2; }
   .wrap > header .skins .eyebrow { display: none; }
@@ -1436,6 +1623,88 @@ try {
     </svg>
   </div>
 
+  <!-- Crescent Sparkle: crescents, stars, hearts and sparkles on candy pink and midnight blue -->
+  <div class="art art-moon">
+    <svg class="art-svg" width="100%" height="100%">
+      <defs>
+        <path id="sm-cr" d="M20 2 A18 18 0 1 0 38 30 A14 14 0 1 1 20 2Z" fill="var(--accent)"/>
+        <path id="sm-st" d="M12 0 L15 8.5 L24 9 L17 14.5 L19.5 23 L12 18 L4.5 23 L7 14.5 L0 9 L9 8.5Z" fill="var(--accent)"/>
+        <path id="sm-ht" d="M12 21 C-4 9 4 -2 12 6 C20 -2 28 9 12 21Z" fill="var(--accent)"/>
+        <path id="sm-sp" d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0Z" fill="var(--btn-bg)"/>
+        <pattern id="sm-pt" width="300" height="260" patternUnits="userSpaceOnUse">
+          <use href="#sm-cr" transform="translate(30 30) scale(1.2)" opacity=".2"/>
+          <use href="#sm-st" transform="translate(170 24) scale(.9)" opacity=".28"/>
+          <use href="#sm-ht" transform="translate(240 120) scale(1)" opacity=".22"/>
+          <use href="#sm-sp" transform="translate(90 130) scale(.9)" opacity=".28"/>
+          <use href="#sm-st" transform="translate(30 190) scale(.6)" opacity=".24"/>
+          <use href="#sm-cr" transform="translate(190 180) scale(.7) rotate(25 20 20)" opacity=".16"/>
+          <use href="#sm-sp" transform="translate(250 30) scale(.5)" opacity=".24"/>
+          <use href="#sm-ht" transform="translate(120 220) scale(.55)" opacity=".2"/>
+          <circle cx="60" cy="100" r="2.4" fill="var(--accent)" opacity=".35"/>
+          <circle cx="150" cy="90" r="1.8" fill="var(--btn-bg)" opacity=".35"/>
+          <circle cx="270" cy="220" r="2.2" fill="var(--accent)" opacity=".3"/>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#sm-pt)"/>
+    </svg>
+    <svg class="crescent" viewBox="0 0 64 64" aria-hidden="true"><path d="M40 4 A28 28 0 1 0 60 46 A22 22 0 1 1 40 4Z" fill="var(--tile-2)"/><path d="M52 10 l1.8 4.4 4.7.3 -3.6 3 1.2 4.6 -4.1-2.6 -4.1 2.6 1.2-4.6 -3.6-3 4.7-.3z" fill="var(--accent)" opacity=".8"/></svg>
+  </div>
+
+  <!-- Midnight Drift: night mountain road, lane dashes, chevrons, speed lines and checkered flag strips -->
+  <div class="art art-drift">
+    <svg class="art-svg" width="100%" height="100%">
+      <defs>
+        <path id="dr-ch" d="M2 2 L16 14 L2 26 L2 18 L9 14 L2 10Z" fill="var(--accent)"/>
+        <pattern id="dr-pt" width="260" height="200" patternUnits="userSpaceOnUse" patternTransform="skewX(-18)">
+          <rect x="20" y="30" width="120" height="5" rx="2" fill="var(--accent)" opacity=".26"/>
+          <rect x="150" y="30" width="40" height="5" rx="2" fill="var(--accent)" opacity=".18"/>
+          <rect x="60" y="100" width="150" height="3" rx="1.5" fill="var(--hl)" opacity=".26"/>
+          <rect x="0" y="100" width="40" height="3" rx="1.5" fill="var(--hl)" opacity=".18"/>
+          <rect x="30" y="165" width="90" height="5" rx="2" fill="var(--accent)" opacity=".2"/>
+          <rect x="170" y="150" width="60" height="3" rx="1.5" fill="var(--hl)" opacity=".2"/>
+          <use href="#dr-ch" transform="translate(200 70) scale(.9)" opacity=".26"/>
+          <use href="#dr-ch" transform="translate(222 70) scale(.9)" opacity=".18"/>
+        </pattern>
+        <pattern id="dr-ck" width="24" height="24" patternUnits="userSpaceOnUse"><rect width="12" height="12" fill="var(--ink)"/><rect x="12" y="12" width="12" height="12" fill="var(--ink)"/></pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#dr-pt)"/>
+      <rect x="0" y="0" width="100%" height="24" fill="url(#dr-ck)" opacity=".09"/>
+      <rect x="0" y="100%" width="100%" height="24" transform="translate(0 -24)" fill="url(#dr-ck)" opacity=".09"/>
+    </svg>
+    <svg class="gauge" viewBox="0 0 120 120" aria-hidden="true">
+      <circle cx="60" cy="60" r="54" fill="none" stroke="var(--line)" stroke-width="3"/>
+      <path d="M18 92 A52 52 0 1 1 102 92" fill="none" stroke="var(--ink-2)" stroke-width="2" opacity=".6"/>
+      <path d="M86 20 A52 52 0 0 1 102 92" fill="none" stroke="var(--hl)" stroke-width="6" opacity=".8"/>
+      <g stroke="var(--ink-2)" stroke-width="2" opacity=".6"><path d="M60 12 V20 M24 28 L30 34 M96 28 L90 34 M12 60 H20 M100 60 H108"/></g>
+      <path d="M60 64 L88 34" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="60" cy="64" r="6" fill="var(--accent)"/>
+    </svg>
+  </div>
+
+  <!-- Ringside Rush: halftone dots, comic bursts, gloves and sweat drops, with ring-rope bars -->
+  <div class="art art-ring">
+    <svg class="art-svg" width="100%" height="100%">
+      <defs>
+        <path id="rg-bu" d="M30 0 L37 17 L55 9 L47 26 L64 30 L47 36 L55 52 L37 44 L30 60 L23 44 L5 52 L13 36 L-4 30 L13 26 L5 9 L23 17Z" fill="var(--accent)"/>
+        <g id="rg-gl" fill="var(--hl)"><path d="M6 20 C6 6 20 2 32 6 C44 8 50 16 48 26 C46 36 36 40 28 40 H14 C9 40 6 36 6 30Z"/><rect x="2" y="24" width="10" height="18" rx="3" fill="var(--accent)"/></g>
+        <path id="rg-dr" d="M10 0 C14 10 20 16 20 24 C20 31 15.5 35 10 35 C4.5 35 0 31 0 24 C0 16 6 10 10 0Z" fill="var(--hl)"/>
+        <pattern id="rg-ht" width="18" height="18" patternUnits="userSpaceOnUse" patternTransform="rotate(30)"><circle cx="9" cy="9" r="2.4" fill="var(--accent)" opacity=".16"/></pattern>
+        <pattern id="rg-pt" width="320" height="270" patternUnits="userSpaceOnUse">
+          <use href="#rg-bu" transform="translate(30 20) scale(1.2)" opacity=".2"/>
+          <use href="#rg-gl" transform="translate(190 40) scale(1.2) rotate(-14 24 22)" opacity=".2"/>
+          <use href="#rg-dr" transform="translate(130 140) scale(.8)" opacity=".26"/>
+          <use href="#rg-bu" transform="translate(220 170) scale(.7)" opacity=".16"/>
+          <use href="#rg-gl" transform="translate(40 180) scale(.8) rotate(12 24 22)" opacity=".16"/>
+          <use href="#rg-dr" transform="translate(290 110) scale(.5)" opacity=".22"/>
+          <use href="#rg-dr" transform="translate(90 90) scale(.45)" opacity=".2"/>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#rg-ht)"/>
+      <rect width="100%" height="100%" fill="url(#rg-pt)"/>
+    </svg>
+    <div class="ropes"><i></i><i></i><i></i></div>
+  </div>
+
   <!-- Meadow Quest: swirly clouds, rolling green hills and gold sparkles -->
   <div class="art art-meadow">
     <svg class="art-svg" width="100%" height="100%">
@@ -1551,6 +1820,24 @@ try {
         <path d="M32 1 C34 14 50 18 50 31 C50 39 42 43 32 43 C22 43 14 39 14 31 C14 24 19 20 22 15 C24 20 26 21 28 21 C26 13 28 7 32 1Z" fill="currentColor"/>
         <path d="M32 21 C32 28 41 30 41 35 C41 40 36 42 32 42 C28 42 23 40 23 35 C23 31 29 29 32 21Z" fill="var(--hl)" opacity=".9"/>
       </svg>
+      <svg class="deco moon" viewBox="0 0 64 44" aria-hidden="true">
+        <path d="M34 3 A19 19 0 1 0 47 36 A15 15 0 1 1 34 3Z" fill="currentColor"/>
+        <path d="M50 8 l2.6 6.2 6.7.5 -5.1 4.3 1.6 6.5 -5.8-3.6 -5.8 3.6 1.6-6.5 -5.1-4.3 6.7-.5z" fill="var(--hl)"/>
+        <path d="M12 8 l1.6 3.4 3.6.4 -2.7 2.4 .8 3.5 -3.3-1.9 -3.3 1.9 .8-3.5 -2.7-2.4 3.6-.4z" fill="var(--btn-edge)" opacity=".9"/>
+      </svg>
+<svg class="deco drift" viewBox="0 0 64 44" aria-hidden="true">
+        <path d="M8 38 A26 26 0 1 1 56 38" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+        <path d="M46 14 A26 26 0 0 1 56 38" fill="none" stroke="var(--hl)" stroke-width="4" stroke-linecap="round"/>
+        <path d="M32 33 L46 16" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/>
+        <circle cx="32" cy="33" r="4.5" fill="currentColor"/>
+        <path d="M14 42 H50" stroke="currentColor" stroke-width="2" stroke-dasharray="6 4" opacity=".6"/>
+      </svg>
+<svg class="deco ring" viewBox="0 0 64 44" aria-hidden="true">
+        <path d="M14 20 C14 6 30 1 42 5 C54 8 58 17 56 27 C54 36 44 41 34 41 H24 C18 41 14 37 14 31Z" fill="currentColor"/>
+        <rect x="5" y="22" width="14" height="19" rx="4" fill="var(--hl)"/>
+        <path d="M40 9 C48 10 52 15 52 21" fill="none" stroke="var(--surface)" stroke-width="2.2" stroke-linecap="round" opacity=".7"/>
+        <path d="M26 31 H48" stroke="var(--surface)" stroke-width="2" stroke-linecap="round" opacity=".6"/>
+      </svg>
       <svg class="deco meadow" viewBox="0 0 64 44" aria-hidden="true">
         <path d="M0 38 C12 26 26 28 34 35 C42 28 54 25 64 34 V44 H0Z" fill="currentColor" opacity=".5"/>
         <path d="M32 38 V21" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" fill="none"/>
@@ -1586,6 +1873,9 @@ try {
           <li role="option" class="opt" id="opt-spark" data-skin="spark" aria-selected="false" style="--s1:#FFD91F;--s2:#E4002B;--s3:#1F1A0B"><span class="sw"></span>Static Spark</li>
           <li role="option" class="opt" id="opt-lucha" data-skin="lucha" aria-selected="false" style="--s1:#0B7A3E;--s2:#D7263D;--s3:#F2C230"><span class="sw"></span>Lucha Libre</li>
           <li role="option" class="opt" id="opt-ember" data-skin="ember" aria-selected="false" style="--s1:#E8590C;--s2:#1E7BE0;--s3:#2A0E04"><span class="sw"></span>Ember Wing</li>
+          <li role="option" class="opt" id="opt-moon" data-skin="moon" aria-selected="false" style="--s1:#3F4BC4;--s2:#FFD6EB;--s3:#FFF0A8"><span class="sw"></span>Crescent Sparkle</li>
+          <li role="option" class="opt" id="opt-drift" data-skin="drift" aria-selected="false" style="--s1:#FFC21A;--s2:#0090D8;--s3:#11141B"><span class="sw"></span>Midnight Drift</li>
+          <li role="option" class="opt" id="opt-ring" data-skin="ring" aria-selected="false" style="--s1:#C21F1D;--s2:#1F54C8;--s3:#E8B923"><span class="sw"></span>Ringside Rush</li>
         </ul>
       </div>
       <div class="modesw" id="modeSw" role="group" aria-label="Light or dark mode">
@@ -3361,7 +3651,10 @@ var CFOP = (function () {
     meadow: 'A scrambled cube is an adventure. Set out and solve it.',
     spark: 'Charge it up, shock the scramble, solve it fast.',
     lucha: 'Mask on. Twist it, flip it, win the match.',
-    ember: 'Fan the flames, then burn through the solve.'
+    ember: 'Fan the flames, then burn through the solve.',
+    moon: 'Moonlight, sparkle and a little bit of magic.',
+    drift: 'Late night, empty pass, one clean line.',
+    ring: 'Ring the bell. Step in. Keep punching.'
   };
   var opts = [].slice.call(document.querySelectorAll('.opt'));
   var dd = {
