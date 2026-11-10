@@ -1,7 +1,7 @@
 {
   "name": "cubely",
   "productName": "Cubely",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Cube scrambler, solver and timer",
   "author": "Cubely",
   "main": "main.js",

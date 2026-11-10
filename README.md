@@ -3,7 +3,7 @@
 # Cubely
 
 **Scramble it. Solve it. Time it.**
-A Rubik's Cube scrambler, solver and timer with ten themes, for Windows, macOS, Linux and Android.
+A Rubik's Cube scrambler, solver and timer with sixteen themes, for Windows, macOS, Linux and Android.
 
 [**▶ Use it in your browser**](https://sunset-soda.github.io/Cubley/) · [**⬇ Download the app**](https://github.com/Sunset-Soda/Cubley/releases/latest)
 
@@ -40,12 +40,12 @@ Press `Space` to start and stop. Every solve is saved and plotted on a graph wit
 
 ![Cubely timer](docs/timer.png)
 
-## Ten themes
-Each theme has its own colours, background art, logo, fonts and light and dark versions. The app follows your system's light or dark setting.
+## Sixteen themes
+Each theme has its own colours, background art, logo, fonts and light and dark versions. The app follows your system's light or dark setting by default, and an Auto / Light / Dark switch lets you pick one yourself.
 
 ![Cubely themes](docs/themes.png)
 
-Cherry Pop · Grape Grunge · Camp Glitter · Midnight Diary · Chrome Chaos · Scarlet Scribble · Crate Jungle · Lonely Shore · Noir Witch · Meadow Quest
+Cherry Pop · Grape Grunge · Camp Glitter · Midnight Diary · Chrome Chaos · Scarlet Scribble · Crate Jungle · Lonely Shore · Noir Witch · Meadow Quest · Static Spark · Lucha Libre · Ember Wing · Crescent Sparkle · Midnight Drift · Ringside Rush
 
 *(Screenshots are taken with fallback fonts; the real app uses each theme's own typeface.)*
 
